@@ -20,7 +20,7 @@ Cubensis::Cubensis()
 
     #if CUBENSIS_DBG!=DBG_NONE
     START_SERIAL(115200);
-    CUBE_PRINT("Starting Cubensis");
+    CUBE_PRINTLN("Starting Cubensis");
     #endif
 
 
@@ -44,14 +44,10 @@ Cubensis::Cubensis()
     } else {
         error_stabx = 0;
         error_ratex = 0;
-        *setpoint_stabx = 0;
-        setpoint_ratex = &error_stabx;
-        pid_stabx = new PID(&orientation->x,  &error_stabx, setpoint_stabx, 0,   0, 0);
-        pid_ratex = new PID(&rotationRate->x, &error_ratex, setpoint_ratex, 25, 10, 1);
-//        pid_ratex = new PID(&rotationRate->x, &error_ratex, &setpoint_ratex, 70, 10, 5);
-
-        orientation = new ITVec3<it_float>();
-        rotationRate = new ITVec3<it_float>();
+        setpoint_stabx = 0;
+        setpoint_ratex = 0; //&error_stabx;
+        pid_stabx = new PID(&orientation.x,  &error_stabx, &setpoint_stabx, 0,   0, 0);
+        pid_ratex = new PID(&rotationRate.x, &error_ratex, &setpoint_ratex, 15, 100, 1);
 
         motor1 = new Motor(MOTOR1_PIN);
         motor2 = new Motor(MOTOR2_PIN);
@@ -101,8 +97,8 @@ void Cubensis::update()
         imu1->updateOrientation();
         imu2->updateOrientation();
 
-        *orientation  = (*imu1->complementary + *imu2->complementary) / 2;
-        *rotationRate = (*imu1->rotation + *imu2->rotation) / 2;
+        orientation  = (*imu1->complementary + *imu2->complementary) / 2;
+        rotationRate = (*imu1->rotation + *imu2->rotation) / 2;
 
         pid_ratex->compute();
         Motor::setThrottle();
@@ -128,11 +124,11 @@ void Cubensis::print()
 
         #if CUBENSIS_DBG==DBG_ARSILISCOPE
         CUBE_PRINT("{\"roll\": ");
-        CUBE_PRINT(orientation->x);
+        CUBE_PRINT(rotationRate.x);
         CUBE_PRINT(",\"pitch\": ");
-        CUBE_PRINT(rotationRate->x);
-        CUBE_PRINT(",\"yaw\": ");
         CUBE_PRINT(error_ratex);
+        CUBE_PRINT(",\"yaw\": ");
+        CUBE_PRINT(orientation.x);
         CUBE_PRINT(",\"motor1\": ");
         CUBE_PRINT(motor1->getThrottle());
         CUBE_PRINT(",\"motor2\": ");

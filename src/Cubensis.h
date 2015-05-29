@@ -12,22 +12,24 @@
 #define DBG_ARSILISCOPE     2
 #define CUBENSIS_DBG        DBG_ARSILISCOPE
 
-#define CUBE_PRINT(x)   ;
-#define CUBE_PRINTLN(x) ;
-#define PRINT_DELAY     0
-
 #if defined(Arduino_h)
-    #if CUBENSIS_DBG!=DBG_NONE
+    #if CUBENSIS_DBG==DBG_NONE
+    #define CUBE_PRINT(x)   ;
+    #define CUBE_PRINTLN(x) ;
+    #define PRINT_DELAY     0
+    #else
     #define START_SERIAL(x) Serial.begin(x);
-    #define PRINT_DELAY     250
     #define CUBE_PRINT(x)   Serial.print(x)
     #define CUBE_PRINTLN(x) Serial.print(x); Serial.print("\n")
     #endif
 
     #if CUBENSIS_DBG==DBG_ARSILISCOPE
-    #define PRINT_DELAY     50
+    #define PRINT_DELAY     100
+    #elif CUBENSIS_DBG==DBG_READABLE
+    #define PRINT_DELAY     450
     #endif
 #endif
+
 
 #define CUBENSIS_STATUS_KILL 		   -1
 #define CUBENSIS_STATUS_SLEEP 			0
@@ -61,15 +63,15 @@ private:
     IMU* imu1;
     IMU* imu2;
 
-    ITVec3<it_float>* orientation;
-    ITVec3<it_float>* rotationRate;
+    ITVec3<it_float> orientation;
+    ITVec3<it_float> rotationRate;
 
     PID* pid_ratex;
     PID* pid_stabx;
     it_float error_ratex;
     it_float error_stabx;
-    it_float* setpoint_ratex;
-    it_float* setpoint_stabx;
+    it_float setpoint_ratex;
+    it_float setpoint_stabx;
 
     Motor* motor1;
     Motor* motor2;

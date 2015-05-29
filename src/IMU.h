@@ -138,30 +138,14 @@ public:
 
         while (TIME_FUNC() - startTime < timeToCalibrate) {
             device->getMotion6(&accelData->x, &accelData->y, &accelData->z, &gyroData->x, &gyroData->y, &gyroData->z);
-
-            // Convert acceleration LSB/mg values to mg
-            accelOffset->x += ((it_float) accelData->x / LSB_PER_G);
-            accelOffset->y += ((it_float) accelData->y / LSB_PER_G);
-            accelOffset->z += ((it_float) accelData->z / LSB_PER_G);
-
-            // Convert gyroscope LSB/deg/s values to deg/sec
-            gyroOffset->x += ((it_float) gyroData->x / LSB_PER_DEG_PER_SEC);
-            gyroOffset->y += ((it_float) gyroData->y / LSB_PER_DEG_PER_SEC);
-            gyroOffset->z += ((it_float) gyroData->z / LSB_PER_DEG_PER_SEC);
-
+            *accelOffset += *accelData / LSB_PER_G;             // convert to G's
+            *gyroOffset += *gyroData / LSB_PER_DEG_PER_SEC;     // convert to deg/sec
             iterations++;
         }
 
-        // calculate averages
-        accelOffset->x /= (it_float) iterations;
-        accelOffset->y /= (it_float) iterations;
-        accelOffset->z /= (it_float) iterations;
-        gyroOffset->x  /= (it_float) iterations;
-        gyroOffset->y  /= (it_float) iterations;
-        gyroOffset->z  /= (it_float) iterations;
-
-        // Account for gravity
-        accelOffset->z -= 1;
+        *accelOffset /= (it_float) iterations;
+        *gyroOffset  /= (it_float) iterations;
+        accelOffset->z -= 1;    // Account for gravity
     };
 
 
@@ -256,19 +240,13 @@ private:
      */
     void getAccelerationAndRotation()
     {
-        device->getMotion6(&accelData->x, &accelData->y, &accelData->z, &gyroData->x, &gyroData->y, &gyroData->z);
-
         unsigned long currentTime = TIME_FUNC();
         it_float dt = (currentTime - previousTime) / TIME_TO_SEC;
         previousTime = currentTime;
 
-        this->rotation->x = 0 - ((it_float) gyroData->x / LSB_PER_DEG_PER_SEC - gyroOffset->x) * dt;
-        this->rotation->y = 0 - ((it_float) gyroData->y / LSB_PER_DEG_PER_SEC - gyroOffset->y) * dt;
-        this->rotation->z = 0 - ((it_float) gyroData->z / LSB_PER_DEG_PER_SEC - gyroOffset->z) * dt;
-
-        acceleration->x = ((it_float) accelData->x / LSB_PER_G) - accelOffset->x * 9.81;
-        acceleration->y = ((it_float) accelData->y / LSB_PER_G) - accelOffset->y * 9.81;
-        acceleration->z = ((it_float) accelData->z / LSB_PER_G) - accelOffset->z * 9.81;
+        device->getMotion6(&accelData->x, &accelData->y, &accelData->z, &gyroData->x, &gyroData->y, &gyroData->z);
+        *rotation = 0.0 - (*gyroData / LSB_PER_DEG_PER_SEC - *gyroOffset) * dt;
+        *acceleration = *accelData / LSB_PER_G - *accelOffset * 9.81;
     };
 
 

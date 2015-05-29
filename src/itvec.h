@@ -39,6 +39,8 @@ struct ITVec3
             : arr{arr[0], arr[1], arr[2]}
     {};
 
+    virtual ~ITVec3() {};
+
     void set(T x, T y, T z) {
         this->x = x;
         this->y = y;
@@ -75,7 +77,7 @@ struct ITVec3
     };
 
     // Operator overloading
-    void operator=(const ITVec3<T>& rhs)
+    virtual void operator=(const ITVec3<T>& rhs)
     {
         x = rhs.x;
         y = rhs.y;
@@ -220,6 +222,18 @@ struct ITVec3
     };
 };
 
+template <typename T>
+ITVec3<T> operator-(const T lhs, const ITVec3<T>& rhs)
+{
+    return ITVec3<T>(lhs - rhs.x, lhs - rhs.y, lhs - rhs.z);
+};
+
+template <typename T>
+ITVec3<T> operator-(const ITVec3<T>& lhs, const T rhs)
+{
+    return ITVec3<T>(lhs.x - rhs, lhs.y - rhs, lhs.z - rhs);
+};
+
 
 struct AccelerationVec: public ITVec3<it_float> {
     AccelerationVec(it_float x = 0, it_float y = 0, it_float z = 0)
@@ -231,6 +245,15 @@ struct AccelerationVec: public ITVec3<it_float> {
 
     double pitch() {
         return atan2(x, sqrt(y*y + z*z)) * RAD2DEG;
+    };
+
+    // Operator overloading
+    template <typename T>
+    void operator=(const ITVec3<T>& rhs)
+    {
+        x = rhs.x;
+        y = rhs.y;
+        z = rhs.z;
     };
 };
 
