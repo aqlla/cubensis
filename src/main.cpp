@@ -57,7 +57,7 @@ void loop() {
 #ifdef DEBUG
     unsigned long now = millis();
     if (now - lastPrint > PRINT_DELAY) {
-        cube->arsiliscope();
+        cube->print();
         lastPrint = now;
     }
 #endif

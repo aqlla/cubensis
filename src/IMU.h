@@ -35,7 +35,7 @@ public:
     short status;
     short address;
 
-    ITVec3<it_float>* complementaryAngle;
+    ITVec3<it_float>*complementary;
     ITVec3<it_float>* orientation;
     ITVec3<it_float>* rotation;
     AccelerationVec*  acceleration;
@@ -50,7 +50,7 @@ public:
             rotation = new ITVec3<it_float>();
             acceleration = new AccelerationVec();
             orientation  = new ITVec3<it_float>();
-            complementaryAngle = new ITVec3<it_float>();
+            complementary = new ITVec3<it_float>();
 
             gyroOffset  = new ITVec3<it_float>();
             accelOffset = new ITVec3<it_float>();
@@ -70,7 +70,7 @@ public:
         delete accelOffset;
         delete orientation;
         delete acceleration;
-        delete complementaryAngle;
+        delete complementary;
     };
 
 
@@ -117,9 +117,9 @@ public:
         flipAngle(&orientation->y);
         flipAngle(&orientation->z);
 
-        complementaryAngle->x = ALPHA * orientation->x + (1 - ALPHA) * acceleration->roll();
-        complementaryAngle->y = ALPHA * orientation->y + (1 - ALPHA) * acceleration->pitch();
-        complementaryAngle->z = orientation->z;
+        complementary->x = ALPHA * orientation->x + (1 - ALPHA) * acceleration->roll();
+        complementary->y = ALPHA * orientation->y + (1 - ALPHA) * acceleration->pitch();
+        complementary->z = orientation->z;
     };
 
     /**
