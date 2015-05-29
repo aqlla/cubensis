@@ -10,7 +10,7 @@
 #include <I2Cdev.h>
 #include "Cubensis.h"
 
-
+#define DEBUG
 #define ARSILISCOPE
 
 #ifdef ARSILISCOPE
@@ -27,22 +27,23 @@ Cubensis* cube;
 unsigned long lastPrint = 0;
 
 void setup() {
-    Wire.begin();
-    TWBR = 24;  // 400kHz I2C clock (200kHz if CPU is 8MHz)
+    Wire.begin();   // use i2cdev fastwire implementation
+    TWBR = 24;      // 400kHz I2C clock (200kHz if CPU is 8MHz)
     Serial.begin(115200);
-
-    PRINTLN("Starting devices.");
     cube = new Cubensis();
 
+    PRINTLN("Starting Cubensis.");
+
     if (cube->status != CUBENSIS_STATUS_RUNNING) {
-        PRINT("Error starting devices.");
-        while(1) delay(100);
+        PRINT("Error starting devices.\nCubrnsis status: ");
+        PRINTLN(cube->status);
+        return;
     }
 
 
     cube->startMotors1();
-    cube->calibrate(1000);
-    delay(4000);
+    cube->calibrate(3000);
+    delay(1000);
 
     cube->startMotors2();
     cube->start();
@@ -53,14 +54,13 @@ void setup() {
 void loop() {
     cube->update();
 
+#ifdef DEBUG
     unsigned long now = millis();
     if (now - lastPrint > PRINT_DELAY) {
-        #ifdef ARSILISCOPE
         cube->arsiliscope();
-        #endif
-
         lastPrint = now;
     }
+#endif
 }
 
 

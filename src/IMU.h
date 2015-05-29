@@ -17,14 +17,15 @@
 #define ADDR_AD0_LOW  MPU6050_ADDRESS_AD0_LOW
 #define ADDR_AD0_HIGH MPU6050_ADDRESS_AD0_HIGH
 
-// #define TIME_IN_MICROS
 
-#ifdef TIME_IN_MICROS
-    #define TIME_FUNC micros
-    #define TIME_TO_SEC 1000000.0
-#else
-    #define TIME_FUNC millis
-    #define TIME_TO_SEC 1000.0
+#if defined(Arduino_h)
+    #ifdef TIME_IN_MICROS
+        #define TIME_FUNC micros
+        #define TIME_TO_SEC 1000000.0
+    #else
+        #define TIME_FUNC millis
+        #define TIME_TO_SEC 1000.0
+    #endif
 #endif
 
 
@@ -34,18 +35,17 @@ public:
     short status;
     short address;
 
-    ITVec3<it_float>* rotation;
-    AccelerationVec* acceleration;
-    ITVec3<it_float>* orientation;
     ITVec3<it_float>* complementaryAngle;
+    ITVec3<it_float>* orientation;
+    ITVec3<it_float>* rotation;
+    AccelerationVec*  acceleration;
 
-    IMU(short address)
-            : status(IMU_STATUS_SLEEP)
+    IMU(short address): status(IMU_STATUS_SLEEP)
     {
         if (address != ADDR_AD0_LOW && address != ADDR_AD0_HIGH) {
             status = IMU_STATUS_ADDRESS_ERROR;
         } else {
-            this->device = new MPU6050();
+            device = new MPU6050();
 
             rotation = new ITVec3<it_float>();
             acceleration = new AccelerationVec();
@@ -63,6 +63,14 @@ public:
     ~IMU()
     {
         delete device;
+        delete rotation;
+        delete gyroData;
+        delete accelData;
+        delete gyroOffset;
+        delete accelOffset;
+        delete orientation;
+        delete acceleration;
+        delete complementaryAngle;
     };
 
 
@@ -78,41 +86,14 @@ public:
     {
         device->initialize();
         if (device->testConnection()) {
-            this->status = IMU_STATUS_OK;
+            status = IMU_STATUS_OK;
             setGyroscopeSensitivity(0);
             setAccelerometerSensitivity(0);
             return true;
         } else {
-            this->status = IMU_STATUS_CONNECTION_ERROR;
+            status = IMU_STATUS_CONNECTION_ERROR;
             return false;
         }
-    };
-
-    /**
-     * Set gyroscope sensitivity.
-     */
-    void setGyroscopeSensitivity(uint8_t sensitivity)
-    {
-        if (sensitivity < 0 || sensitivity >= 4) {
-            sensitivity = 0;
-        }
-
-        device->setFullScaleGyroRange(sensitivity);
-        LSB_PER_DEG_PER_SEC = GYR_SENSITIVITIES[sensitivity];
-    };
-
-
-    /**
-     * Set accelerometer sensitivity.
-     */
-    void setAccelerometerSensitivity(uint8_t sensitivity)
-    {
-        if (sensitivity < 0 || sensitivity >= 4) {
-            sensitivity = 0;
-        }
-
-        device->setFullScaleAccelRange(sensitivity);
-        LSB_PER_G = ACC_SENSITIVITIES[sensitivity];
     };
 
 
@@ -142,8 +123,8 @@ public:
     };
 
     /**
-     * Calibrate the IMU device->
-     * 
+     * Calibrate the IMU device.
+     *
      * Measures the average accelerometer and gyroscope data over a given
      * number of iterations (preferably when the device is steady and the
      * z-azis is normal to gravity) and accordingly sets offset values per axis.
@@ -180,6 +161,34 @@ public:
 
 
     /**
+     * Set gyroscope sensitivity.
+     */
+    void setGyroscopeSensitivity(uint8_t sensitivity)
+    {
+        if (sensitivity < 0 || sensitivity >= 4) {
+            sensitivity = 0;
+        }
+
+        device->setFullScaleGyroRange(sensitivity);
+        LSB_PER_DEG_PER_SEC = GYR_SENSITIVITIES[sensitivity];
+    };
+
+
+    /**
+     * Set accelerometer sensitivity.
+     */
+    void setAccelerometerSensitivity(uint8_t sensitivity)
+    {
+        if (sensitivity < 0 || sensitivity >= 4) {
+            sensitivity = 0;
+        }
+
+        device->setFullScaleAccelRange(sensitivity);
+        LSB_PER_G = ACC_SENSITIVITIES[sensitivity];
+    };
+
+
+    /**
      * Initialize the previous time value;
      */
     void startTime() {
@@ -189,22 +198,18 @@ public:
 private:
     // The IMU device 
     MPU6050* device;
-
+    unsigned long previousTime;
     ITVec3<it_float>* gyroOffset;
     ITVec3<it_float>* accelOffset;
-
-    // Alpha value for complimentary filter
-    constexpr static it_float ALPHA = .965;
-
-    unsigned long previousTime;
-
 
     // Sensitivity Settings
     short    LSB_PER_G;           // units: LSB/g
     it_float LSB_PER_DEG_PER_SEC; // units: LSB/Ã‚Â°/s
-
     constexpr static short    ACC_SENSITIVITIES[4] = {16384, 8192, 4096, 2048};
     constexpr static it_float GYR_SENSITIVITIES[4] = {131, 65.5, 32.8, 16.4};
+
+    // Alpha value for complimentary filter
+    constexpr static it_float ALPHA = .965;
 
     /**
      * Raw Gyroscope readings.
@@ -262,28 +267,6 @@ private:
     };
 
 
-    void getRotationRate(ITVec3<it_float>* dest)
-    {
-        device->getRotation(&gyroData->x, &gyroData->y, &gyroData->z);
-
-        unsigned long currentTime = TIME_FUNC();
-        it_float dt = (currentTime - previousTime) / TIME_TO_SEC;
-        previousTime = currentTime;
-
-        dest->x = 0 - ((it_float) gyroData->x / LSB_PER_DEG_PER_SEC - gyroOffset->x) * dt;
-        dest->y = 0 - ((it_float) gyroData->y / LSB_PER_DEG_PER_SEC - gyroOffset->y) * dt;
-        dest->z = 0 - ((it_float) gyroData->z / LSB_PER_DEG_PER_SEC - gyroOffset->z) * dt;
-    }
-
-    void getAcceleration(ITVec3<it_float>* dest)
-    {
-        device->getAcceleration(&accelData->x, &accelData->y, &accelData->z);
-        dest->x = ((it_float) accelData->x / LSB_PER_G) - accelOffset->x * 9.81;
-        dest->y = ((it_float) accelData->y / LSB_PER_G) - accelOffset->y * 9.81;
-        dest->z = ((it_float) accelData->z / LSB_PER_G) - accelOffset->z * 9.81;
-    };
-
-
     it_float flipAngle(it_float *angle)
     {
         if (*angle > 180) {
@@ -298,7 +281,9 @@ private:
 
     short getUpOrDown()
     {
-        return (short) acceleration->z / abs(acceleration->z);
+        return acceleration->z > 0
+                ? (short) 1
+                : (short) -1;
     };
 };
 

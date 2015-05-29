@@ -3,13 +3,11 @@
 
 #include "Arduino.h"
 #include "Servo.h"
-//#include "ServoTimers.h"
 #include "itvec.h"
 #include "pid.h"
 #include "imu.h"
 
 #define CUBENSIS_DEBUG
-
 
 #define IMU1_ADDR MPU6050_ADDRESS_AD0_LOW
 #define IMU2_ADDR MPU6050_ADDRESS_AD0_HIGH
