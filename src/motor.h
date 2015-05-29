@@ -5,10 +5,8 @@
 #ifndef CUBENSIS_MOTOR_H
 #define CUBENSIS_MOTOR_H
 
-//#include "Arduino.h"
-#include "../lib/arduino/avr/cores/Arduino.h"
-#include "../lib/servo/Servo.h"
-
+#include "Arduino.h"
+#include "Servo.h"
 
 #define MOTOR1_PIN 3
 #define MOTOR2_PIN 5
@@ -22,27 +20,26 @@
 #define MOTOR_START_THROTTLE1 10
 #define MOTOR_START_THROTTLE2 20
 
+
+
 class Motor
 {
 public:
     Servo servo;
     uint8_t pin;
+
     uint8_t throttle;
-    bool is_kill;
+    static uint8_t throttleAll;
+    static bool is_kill;
 
+    Motor(uint8_t pin);
+    void start();
+    void setThrottle(uint8_t rate_error=0);
+    static void setThrottleAll(uint8_t value);
+    static void kill(bool=true);
 
-    Motor(uint8_t pin) {
+private:
 
-    }
-
-    void setThrottle(unsigned short throttle) {
-        this->throttle = throttle;
-    }
-
-    int kill() {
-        throttle = THROTTLE_KILL;
-        is_kill = true;
-    };
 };
 
 

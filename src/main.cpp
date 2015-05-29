@@ -41,11 +41,9 @@ void setup() {
     }
 
 
-    cube->startMotors1();
+    cube->startMotors();
     cube->calibrate(3000);
     delay(1000);
-
-    cube->startMotors2();
     cube->start();
     lastPrint = millis();
 }

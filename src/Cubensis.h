@@ -18,7 +18,7 @@
 #if defined(Arduino_h)
     #if CUBENSIS_DBG!=DBG_NONE
     #define CUBE_PRINT(x)   Serial.print(x)
-    #define CUBE_PRINTLN(x) Serial.print(x) \
+    #define CUBE_PRINTLN(x) Serial.print(x); \
                             Serial.print("\n")
     #endif
 #endif
@@ -49,17 +49,13 @@ public:
 
     Cubensis();
 
-    void startMotors1();
-
-    void startMotors2();
+    void startMotors();
 
     void calibrate(short iterations);
 
     void start();
 
     void update();
-
-    void kill();
 
     void print();
 
@@ -71,19 +67,14 @@ private:
     it_float rate_error;
     it_float setPoint;
 
-    Servo motor1;
-    Servo motor2;
-    Servo motor3;
-    Servo motor4;
+    Motor* motor1;
+    Motor* motor2;
+    Motor* motor3;
+    Motor* motor4;
 
-    int motor1_throt;
-    int motor2_throt;
-    int motor3_throt;
-    int motor4_throt;
+    uint8_t throttle;
 
-    int throttle;
-
-    int map_uint8(int, int, int, int, int);
+    uint8_t map_uint8(int, int, int, int, int);
 };
 
 #endif

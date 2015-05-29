@@ -4,6 +4,13 @@
 #include "Arduino.h"
 #include "math.h"
 
+#if defined(Arduino_h)
+    #define VEC_PRINT(x)    Serial.print(x)
+    #define VEC_PRINTLN(x)  Serial.print(x); \
+                            Serial.print("\n")
+#endif
+
+
 #define RAD2DEG 57.29577
 
 typedef double it_float;
@@ -188,13 +195,13 @@ struct ITVec3
     };
 
     void print() {
-        Serial.print("x: ");
-        Serial.print(x);
-        Serial.print(", y: ");
-        Serial.print(y);
-        Serial.print(", z: ");
-        Serial.print(z);
-        Serial.print("\n");
+        VEC_PRINT("x: ");
+        VEC_PRINT(x);
+        VEC_PRINT(", y: ");
+        VEC_PRINT(y);
+        VEC_PRINT(", z: ");
+        VEC_PRINT(z);
+        VEC_PRINTLN("\n");
     };
 };
 
