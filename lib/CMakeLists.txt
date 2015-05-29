@@ -1,0 +1,57 @@
+
+add_library(ARDUINO_CORE
+    core/abi.cpp
+    core/Arduino.h
+    core/binary.h
+    core/CDC.cpp
+    core/Client.h
+    core/HardwareSerial.cpp
+    core/HardwareSerial.h
+    core/HardwareSerial0.cpp
+    core/HardwareSerial1.cpp
+    core/HardwareSerial2.cpp
+    core/HardwareSerial3.cpp
+    core/HardwareSerial_private.h
+    core/HID.cpp
+    core/hooks.c
+    core/IPAddress.cpp
+    core/IPAddress.h
+    core/main.cpp
+    core/new.cpp
+    core/new.h
+    core/Print.cpp
+    core/Print.h
+    core/Printable.h
+    core/Server.h
+    core/Stream.cpp
+    core/Stream.h
+    core/Tone.cpp
+    core/Udp.h
+    core/USBAPI.h
+    core/USBCore.cpp
+    core/USBCore.h
+    core/USBDesc.h
+    core/WCharacter.h
+    core/WInterrupts.c
+    core/wiring.c
+    core/wiring_analog.c
+    core/wiring_digital.c
+    core/wiring_private.h
+    core/wiring_pulse.c
+    core/wiring_shift.c
+    core/WMath.cpp
+    core/WString.cpp
+    core/WString.h)
+
+add_library(MPU6050
+    mpu6050/MPU6050.h
+    mpu6050/MPU6050.cpp)
+
+add_library(I2CDEV
+    i2cdev/I2Cdev.h
+    i2cdev/I2Cdev.cpp)
+
+add_library(SERVO
+    servo/Servo.h
+    servo/avr/ServoTimers.h
+    servo/avr/Servo.cpp)
