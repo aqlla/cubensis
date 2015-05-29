@@ -14,12 +14,19 @@
 
 #define CUBE_PRINT(x)   ;
 #define CUBE_PRINTLN(x) ;
+#define PRINT_DELAY     0
 
 #if defined(Arduino_h)
     #if CUBENSIS_DBG!=DBG_NONE
+    #define START_SERIAL(x) Serial.begin(x);
+    #define PRINT_DELAY     250
     #define CUBE_PRINT(x)   Serial.print(x)
     #define CUBE_PRINTLN(x) Serial.print(x); \
                             Serial.print("\n")
+    #endif
+
+    #if CUBENSIS_DBG==DBG_ARSILISCOPE
+    #define PRINT_DELAY     50
     #endif
 #endif
 
@@ -43,8 +50,6 @@
 
 class Cubensis {
 public:
-    IMU* imu1;
-    IMU* imu2;
     short status;
 
     Cubensis();
@@ -60,12 +65,18 @@ public:
     void print();
 
 private:
+    IMU* imu1;
+    IMU* imu2;
+
     ITVec3<it_float>* orientation;
     ITVec3<it_float>* rotationRate;
 
-    PID* pidx;
-    it_float rate_error;
-    it_float setPoint;
+    PID* pid_ratex;
+    PID* pid_stabx;
+    it_float error_ratex;
+    it_float error_stabx;
+    it_float* setpoint_ratex;
+    it_float* setpoint_stabx;
 
     Motor* motor1;
     Motor* motor2;
@@ -74,7 +85,8 @@ private:
 
     uint8_t throttle;
 
-    uint8_t map_uint8(int, int, int, int, int);
+    static unsigned long lastPrint;
+    static unsigned long now;
 };
 
 #endif

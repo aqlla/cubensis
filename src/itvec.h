@@ -5,11 +5,14 @@
 #include "math.h"
 
 #if defined(Arduino_h)
-    #define VEC_PRINT(x)    Serial.print(x)
-    #define VEC_PRINTLN(x)  Serial.print(x); \
+#define VEC_PRINT(x)    Serial.print(x)
+#define VEC_PRINTLN(x)  Serial.print(x); \
                             Serial.print("\n")
+#else
+    #include <iostream>
+    #define VEC_PRINT(x)    std::cout << x
+    #define VEC_PRINTLN(x)  std::cout << x << std::endl;
 #endif
-
 
 #define RAD2DEG 57.29577
 
@@ -22,6 +25,11 @@ struct ITVec3
     T& x = arr[0];
     T& y = arr[1];
     T& z = arr[2];
+
+
+    ITVec3(ITVec3<T> &vec3)
+            : arr{vec3.x, vec3.y, vec3.z}
+    {};
 
     ITVec3(T x=0, T y=0, T z=0)
             : arr{x, y, z}
@@ -67,6 +75,13 @@ struct ITVec3
     };
 
     // Operator overloading
+    void operator=(const ITVec3<T>& rhs)
+    {
+        x = rhs.x;
+        y = rhs.y;
+        z = rhs.z;
+    };
+
     ITVec3<T> operator+(const ITVec3<T>& rhs)
     {
         return ITVec3<T>(x + rhs.x, y + rhs.y, z + rhs.z);

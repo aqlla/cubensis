@@ -4,34 +4,49 @@
 
 #include "motor.h"
 
+bool Motor::is_kill = false;
+uint8_t Motor::throttle = 0;
+
+
 Motor::Motor(uint8_t pin) {
     servo.attach(pin);
 }
 
-void Motor::setThrottle(uint8_t rate_error=0) {
+void Motor::setError(it_float rate_error) {
     if (!is_kill) {
-        throttle = throttleAll + rate_error;
-        if (throttle > THROTTLE_MAX) {
-            throttle = THROTTLE_MAX;
-        } else if (throttle < THROTTLE_MIN) {
-            throttle = THROTTLE_MIN;
+        error = throttle + rate_error;
+        if (error > THROTTLE_MAX) {
+            error = THROTTLE_MAX;
+        } else if (error < THROTTLE_MIN) {
+            error = THROTTLE_MIN;
         }
 
-        servo.write(throttle);
+        servo.write(error);
     } else {
         servo.write(THROTTLE_KILL);
     }
 };
 
 void Motor::start() {
-    setThrottle(MOTOR_START_THROTTLE1);
+    if (!is_kill) {
+        error = MOTOR_START_THROTTLE1;
+        servo.write(error);
+    }
 }
 
-static void Motor::setThrottleAll(uint8_t value) {
-    throttleAll = value;
+uint8_t Motor::getThrottle() {
+    return throttle + error;
 }
 
-static void Motor::kill(bool doKill=true) {
-    throttleAll = THROTTLE_KILL;
+void Motor::setThrottle(uint8_t value) {
+    throttle = value;
+}
+
+void Motor::setThrottle() {
+    throttle = map(analogRead(THROTTLE_PIN), 0, 1023, THROTTLE_MIN, THROTTLE_MAX);
+}
+
+void Motor::kill(bool doKill) {
+    throttle = THROTTLE_KILL;
     is_kill = doKill;
 }
