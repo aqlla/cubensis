@@ -75,10 +75,10 @@ void Cubensis::startMotors()
     motor4->start();
 }
 
-void Cubensis::calibrate(short iterations)
+void Cubensis::calibrate(unsigned long timeToCalibrate)
 {
-    imu1->calibrate(iterations);
-    imu2->calibrate(iterations);
+    imu1->calibrate(timeToCalibrate);
+    imu2->calibrate(timeToCalibrate);
 }
 
 void Cubensis::start()

@@ -131,9 +131,12 @@ public:
      *
      * @param iterations: number of times to scan IMU readings.
      */
-    void calibrate(short iterations)
+    void calibrate(unsigned long timeToCalibrate)
     {
-        for (short i = 0; i < iterations; ++i) {
+        unsigned long startTime = TIME_FUNC();
+        int iterations = 0;
+
+        while (TIME_FUNC() - startTime < timeToCalibrate) {
             device->getMotion6(&accelData->x, &accelData->y, &accelData->z, &gyroData->x, &gyroData->y, &gyroData->z);
 
             // Convert acceleration LSB/mg values to mg
@@ -145,6 +148,8 @@ public:
             gyroOffset->x += ((it_float) gyroData->x / LSB_PER_DEG_PER_SEC);
             gyroOffset->y += ((it_float) gyroData->y / LSB_PER_DEG_PER_SEC);
             gyroOffset->z += ((it_float) gyroData->z / LSB_PER_DEG_PER_SEC);
+
+            iterations++;
         }
 
         // calculate averages

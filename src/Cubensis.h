@@ -50,18 +50,12 @@
 
 class Cubensis {
 public:
-    short status;
-
     Cubensis();
 
     void startMotors();
-
-    void calibrate(short iterations);
-
+    void calibrate(unsigned long timeToCalibrate);
     void start();
-
     void update();
-
     void print();
 
 private:
@@ -85,6 +79,7 @@ private:
 
     uint8_t throttle;
 
+    short status;
     static unsigned long lastPrint;
     static unsigned long now;
 };
