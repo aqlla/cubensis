@@ -10,7 +10,7 @@
 #define DBG_NONE            0
 #define DBG_READABLE        1
 #define DBG_ARSILISCOPE     2
-#define CUBENSIS_DBG        DBG_NONE
+#define CUBENSIS_DBG        DBG_ARSILISCOPE
 
 #define CUBE_PRINT(x)   ;
 #define CUBE_PRINTLN(x) ;
@@ -21,8 +21,7 @@
     #define START_SERIAL(x) Serial.begin(x);
     #define PRINT_DELAY     250
     #define CUBE_PRINT(x)   Serial.print(x)
-    #define CUBE_PRINTLN(x) Serial.print(x); \
-                            Serial.print("\n")
+    #define CUBE_PRINTLN(x) Serial.print(x); Serial.print("\n")
     #endif
 
     #if CUBENSIS_DBG==DBG_ARSILISCOPE
@@ -37,10 +36,10 @@
 #define CUBENSIS_STATUS_ERROR_IMU2 		3
 #define CUBENSIS_STATUS_ERROR_BOTH_IMU  4
 
-
 #define IMU1_ADDR MPU6050_ADDRESS_AD0_LOW
 #define IMU2_ADDR MPU6050_ADDRESS_AD0_HIGH
 
+#define USE_KILL_SWITCH false
 #define KILL_SIGNAL LOW
 #define KILL_PIN 2
 #define THROTTLE_PIN 2

@@ -1,4 +1,4 @@
-.pioenvs/uno/servo/avr/Servo.o: .pioenvs/uno/servo/avr/Servo.cpp \
+.pioenvs/uno/Servo/avr/Servo.o: .pioenvs/uno/Servo/avr/Servo.cpp \
  .pioenvs/uno/FrameworkArduino/Arduino.h \
  .pioenvs/uno/FrameworkArduino/binary.h \
  .pioenvs/uno/FrameworkArduino/WCharacter.h \

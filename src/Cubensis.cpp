@@ -46,8 +46,8 @@ Cubensis::Cubensis()
         error_ratex = 0;
         *setpoint_stabx = 0;
         setpoint_ratex = &error_stabx;
-        pid_stabx = new PID(&orientation->x,  &error_stabx, setpoint_stabx, 3,   0, 0);
-        pid_ratex = new PID(&rotationRate->x, &error_ratex, setpoint_ratex, 70, 10, 5);
+        pid_stabx = new PID(&orientation->x,  &error_stabx, setpoint_stabx, 0,   0, 0);
+        pid_ratex = new PID(&rotationRate->x, &error_ratex, setpoint_ratex, 25, 10, 1);
 //        pid_ratex = new PID(&rotationRate->x, &error_ratex, &setpoint_ratex, 70, 10, 5);
 
         orientation = new ITVec3<it_float>();
@@ -92,7 +92,7 @@ void Cubensis::start()
 void Cubensis::update()
 {
     if (status != CUBENSIS_STATUS_KILL) {
-        if (digitalRead(KILL_PIN) == KILL_SIGNAL) {
+        if (USE_KILL_SWITCH && digitalRead(KILL_PIN) == KILL_SIGNAL) {
             status = CUBENSIS_STATUS_KILL;
             Motor::kill();
             return;
@@ -103,12 +103,6 @@ void Cubensis::update()
 
         *orientation  = (*imu1->complementary + *imu2->complementary) / 2;
         *rotationRate = (*imu1->rotation + *imu2->rotation) / 2;
-//        orientation->x = (imu1->complementary->x + imu2->complementary->x) / 2.0;
-//        orientation->y = (imu1->complementary->y + imu2->complementary->y) / 2.0;
-//        orientation->z = (imu1->complementary->z + imu2->complementary->z) / 2.0;
-//        rotationRate->x = (imu1->rotation->x + imu2->rotation->x) / 2.0;
-//        rotationRate->y = (imu1->rotation->y + imu2->rotation->y) / 2.0;
-//        rotationRate->z = (imu1->rotation->z + imu2->rotation->z) / 2.0;
 
         pid_ratex->compute();
         Motor::setThrottle();
