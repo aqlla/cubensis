@@ -6,6 +6,7 @@
  */
 
 #include <Arduino.h>
+#include "I2cdev.h"
 #include "Cubensis.h"
 
 Cubensis* cube;

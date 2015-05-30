@@ -13,7 +13,6 @@ Motor::Motor(uint8_t pin) {
 }
 
 void Motor::setError(it_float rate_error) {
-    if (!is_kill) {
         error = throttle + rate_error;
         if (error > THROTTLE_MAX) {
             error = THROTTLE_MAX;
@@ -22,16 +21,10 @@ void Motor::setError(it_float rate_error) {
         }
 
         servo.write(error);
-    } else {
-        servo.write(THROTTLE_KILL);
-    }
 };
 
 void Motor::start() {
-    if (!is_kill) {
-        error = MOTOR_START_THROTTLE1;
-        servo.write(error);
-    }
+    servo.write(MOTOR_START_THROTTLE1);
 }
 
 uint8_t Motor::getThrottle() {
@@ -44,6 +37,7 @@ void Motor::setThrottle(uint8_t value) {
 
 void Motor::setThrottle() {
 //    throttle = 50;
+
     throttle = map(analogRead(THROTTLE_PIN), 0, 1023, THROTTLE_MIN, THROTTLE_MAX);
 }
 

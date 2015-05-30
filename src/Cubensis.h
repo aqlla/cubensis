@@ -10,7 +10,7 @@
 #define DBG_NONE            0
 #define DBG_READABLE        1
 #define DBG_ARSILISCOPE     2
-#define CUBENSIS_DBG        DBG_NONE
+#define CUBENSIS_DBG        DBG_ARSILISCOPE
 
 #if defined(Arduino_h)
     #if CUBENSIS_DBG==DBG_NONE

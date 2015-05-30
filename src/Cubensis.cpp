@@ -103,7 +103,6 @@ void Cubensis::update()
         Motor::setThrottle();
         motor2->setError(error_ratex);
         motor4->setError(-error_ratex);
-
     } else if (digitalRead(KILL_PIN) != KILL_SIGNAL) {
         Motor::kill(false);
         status = CUBENSIS_STATUS_RUNNING;
