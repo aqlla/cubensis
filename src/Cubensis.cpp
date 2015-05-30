@@ -23,7 +23,6 @@ Cubensis::Cubensis()
     CUBE_PRINTLN("Starting Cubensis");
     #endif
 
-
     if (imu1Status != IMU_STATUS_OK || imu2Status != IMU_STATUS_OK) {
         status = CUBENSIS_STATUS_ERROR_BOTH_IMU;
         #if CUBENSIS_DBG!=DBG_NONE
@@ -47,7 +46,7 @@ Cubensis::Cubensis()
         setpoint_stabx = 0;
         setpoint_ratex = 0; //&error_stabx;
         pid_stabx = new PID(&orientation.x,  &error_stabx, &setpoint_stabx, 0,   0, 0);
-        pid_ratex = new PID(&rotationRate.x, &error_ratex, &setpoint_ratex, 15, 100, 1);
+        pid_ratex = new PID(&rotationRate.x, &error_ratex, &setpoint_ratex, 50, 50, 1);
 
         motor1 = new Motor(MOTOR1_PIN);
         motor2 = new Motor(MOTOR2_PIN);
@@ -127,14 +126,14 @@ void Cubensis::print()
         CUBE_PRINT(rotationRate.x);
         CUBE_PRINT(",\"pitch\": ");
         CUBE_PRINT(error_ratex);
-        CUBE_PRINT(",\"yaw\": ");
-        CUBE_PRINT(orientation.x);
-        CUBE_PRINT(",\"motor1\": ");
-        CUBE_PRINT(motor1->getThrottle());
+//        CUBE_PRINT(",\"yaw\": ");
+//        CUBE_PRINT(orientation.x);
+//        CUBE_PRINT(",\"motor1\": ");
+//        CUBE_PRINT(motor1->getThrottle());
         CUBE_PRINT(",\"motor2\": ");
         CUBE_PRINT(motor2->getThrottle());
-        CUBE_PRINT(",\"motor3\": ");
-        CUBE_PRINT(motor3->getThrottle());
+//        CUBE_PRINT(",\"motor3\": ");
+//        CUBE_PRINT(motor3->getThrottle());
         CUBE_PRINT(",\"motor4\": ");
         CUBE_PRINT(motor4->getThrottle());
         CUBE_PRINTLN("}");

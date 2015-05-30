@@ -43,8 +43,8 @@ void Motor::setThrottle(uint8_t value) {
 }
 
 void Motor::setThrottle() {
-    throttle = 50;
-//    throttle = map(analogRead(THROTTLE_PIN), 0, 1023, THROTTLE_MIN, THROTTLE_MAX);
+//    throttle = 50;
+    throttle = map(analogRead(THROTTLE_PIN), 0, 1023, THROTTLE_MIN, THROTTLE_MAX);
 }
 
 void Motor::kill(bool doKill) {

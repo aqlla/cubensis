@@ -10,7 +10,7 @@
 #define DBG_NONE            0
 #define DBG_READABLE        1
 #define DBG_ARSILISCOPE     2
-#define CUBENSIS_DBG        DBG_ARSILISCOPE
+#define CUBENSIS_DBG        DBG_NONE
 
 #if defined(Arduino_h)
     #if CUBENSIS_DBG==DBG_NONE
@@ -41,7 +41,7 @@
 #define IMU1_ADDR MPU6050_ADDRESS_AD0_LOW
 #define IMU2_ADDR MPU6050_ADDRESS_AD0_HIGH
 
-#define USE_KILL_SWITCH false
+#define USE_KILL_SWITCH true
 #define KILL_SIGNAL LOW
 #define KILL_PIN 2
 #define THROTTLE_PIN 2
