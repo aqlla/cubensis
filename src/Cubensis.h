@@ -3,7 +3,6 @@
 
 #include "Arduino.h"
 #include "Servo.h"
-//#include "ServoTimers.h"
 #include "itvec.h"
 #include "pid.h"
 #include "imu.h"
@@ -45,9 +44,12 @@ public:
     ITVec3<it_float>* orientation;
     ITVec3<it_float>* rotationRate;
 
-    PID* pidx;
+    PID* pid_ratex;
+    PID* pid_stabx;
     it_float rate_error;
-    it_float setPoint;
+    it_float stab_error;
+    it_float setpoint_stabx;
+    it_float setpoint_ratex;
 
     Servo motor1;
     Servo motor2;
@@ -67,10 +69,15 @@ public:
         imu2 = new IMU(IMU2_ADDR);
 
         rate_error = 0;
-        setPoint = 0;
+        stab_error = 0;
+        setpoint_stabx = 0;
+        setpoint_ratex = 0;
         orientation = new ITVec3<it_float>();
         rotationRate = new ITVec3<it_float>();
-        pidx = new PID(&rotationRate->x, &rate_error, &setPoint, 100, 0, 15);
+
+
+        pid_stabx = new PID(&orientation->x,  &stab_error, &setpoint_stabx, 10, 0, 0);
+        pid_ratex = new PID(&rotationRate->x, &rate_error, &stab_error, 70, 50, 1);
 
         pinMode(KILL_PIN, INPUT);
         motor1.attach(MOTOR1_PIN);
@@ -150,7 +157,9 @@ public:
             rotationRate->x = (imu1->rotation->x + imu2->rotation->x) / 2.0;
             rotationRate->y = (imu1->rotation->y + imu2->rotation->y) / 2.0;
             rotationRate->z = (imu1->rotation->z + imu2->rotation->z) / 2.0;
-            pidx->compute();
+
+            pid_stabx->compute();
+            pid_ratex->compute();
 
             throttle = (int) map(analogRead(THROTTLE_PIN), 0, 1023, THROTTLE_MIN, THROTTLE_MAX);
 
@@ -189,7 +198,7 @@ public:
         Serial.print("{\"roll\": ");
         Serial.print(orientation->x);
         Serial.print(",\"pitch\": ");
-        Serial.print(rotationRate->x);
+        Serial.print(stab_error);
         Serial.print(",\"yaw\": ");
         Serial.print(rate_error);
         Serial.print(",\"motor1\": ");

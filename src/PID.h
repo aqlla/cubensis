@@ -18,12 +18,12 @@ public:
     /**
      * PID Constructor.
      *
-     * User passes references to their input, output, and setpoint variables so
+     * User passes references to their input, output, and setpoint_stabx variables so
      * they may be more easily accessed by the PID object.
      *
      * @param input: input data, probably the value of a pin read on Arduino.
      * @param output: error data the user will use from PID.
-     * @param setpoint: the correct point. where error is 0.
+     * @param setpoint_stabx: the correct point. where error is 0.
      * @param kp: Proportional tuning parameter.
      * @param ki: Integral tuning parameter.
      * @param kd: Derivative tuning parameter.
