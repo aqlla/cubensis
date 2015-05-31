@@ -71,11 +71,11 @@ Cubensis::Cubensis()
 
 
 /**
- * Start Motors.
+ * Prepare Quadrotor for Flight.
  * Attach all motor speed controllers to the correct pin and write the correct
  * startup value to turn them on.
  */
-void Cubensis::startMotors()
+void Cubensis::prepare()
 {
     motor1.init();
     motor2.init();

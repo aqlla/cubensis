@@ -33,10 +33,11 @@
 
 #define CUBENSIS_STATUS_KILL 		   -1
 #define CUBENSIS_STATUS_SLEEP 			0
-#define CUBENSIS_STATUS_RUNNING 		1
-#define CUBENSIS_STATUS_ERROR_IMU1 		2
-#define CUBENSIS_STATUS_ERROR_IMU2 		3
-#define CUBENSIS_STATUS_ERROR_BOTH_IMU  4
+#define CUBENSIS_STATUS_READY    		1
+#define CUBENSIS_STATUS_RUNNING 		2
+#define CUBENSIS_STATUS_ERROR_IMU1 		3
+#define CUBENSIS_STATUS_ERROR_IMU2 		4
+#define CUBENSIS_STATUS_ERROR_BOTH_IMU  5
 
 #define USE_KILL_SWITCH true
 #define KILL_SIGNAL LOW
@@ -46,7 +47,7 @@ class Cubensis {
 public:
     Cubensis();
 
-    void startMotors();
+    void prepare();
     void calibrateSensors(unsigned long calibrationTime);
     void start();
     void update();
