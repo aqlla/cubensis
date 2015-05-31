@@ -41,7 +41,7 @@
 #define IMU1_ADDR MPU6050_ADDRESS_AD0_LOW
 #define IMU2_ADDR MPU6050_ADDRESS_AD0_HIGH
 
-#define USE_KILL_SWITCH true
+#define USE_KILL_SWITCH false
 #define KILL_SIGNAL LOW
 #define KILL_PIN 2
 #define THROTTLE_PIN 2
@@ -57,6 +57,7 @@ public:
     void calibrate(unsigned long timeToCalibrate);
     void start();
     void update();
+    void kill();
     void print();
 
 private:
@@ -73,12 +74,12 @@ private:
     it_float setpoint_ratex;
     it_float setpoint_stabx;
 
-    Motor* motor1;
-    Motor* motor2;
-    Motor* motor3;
-    Motor* motor4;
+    Motor motor1;
+    Motor motor2;
+    Motor motor3;
+    Motor motor4;
 
-    uint8_t throttle;
+    int throttle;
 
     short status;
     static unsigned long lastPrint;

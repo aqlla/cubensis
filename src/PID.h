@@ -31,7 +31,7 @@ public:
     PID(it_float* input, it_float* output, it_float* setpoint, it_float kp, it_float ki, it_float kd)
             :input(input), output(output), setpoint(setpoint)
     {
-        samplePeriod = 50;
+        samplePeriod = 0;
         setOutputLimits(-255, 255);
 
         setMode(AUTOMATIC);
@@ -51,19 +51,19 @@ public:
      * has passed.
      * @return true if computation ran, false if not.
      */
-    bool compute()
+    bool computeError()
     {
         if (mode == AUTOMATIC) {
             unsigned long now = millis();
-            unsigned long elapsedTime = now - previousTime;
+            unsigned long dt = now - previousTime;
 
-            if (elapsedTime >= samplePeriod) {
+            if (dt >= samplePeriod) {
                 // Calculate proportional error.
                 it_float input = *(this->input);
                 it_float proportionalError = *(this->setpoint) - input;
 
                 // Calculate current integral error and add it to the accumulator.
-                integralError += k_integral * proportionalError;
+                integralError += (k_integral * proportionalError) * dt;
                 // getBoundedValue(&integralError);
 
                 // Calculate derivative error
@@ -71,7 +71,7 @@ public:
 
                 // Calculate adjusted values considering the coefficients.
                 it_float proportionalComponent = k_proportional * proportionalError;
-                it_float derivativeComponent   = k_derivative * derivativeError;
+                it_float derivativeComponent   = (k_derivative * derivativeError) / dt;
 
                 // Calculate new error output.
                 *output = getBoundedValue(proportionalComponent + integralError - derivativeComponent);
@@ -79,12 +79,10 @@ public:
                 previousInput = input;
                 previousTime  = now;
                 return true;
-            } else {
-                return false;
             }
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -96,12 +94,9 @@ public:
      */
     void setTuningCoefficients(it_float kp, it_float ki, it_float kd)
     {
-        if (kp < 0 || ki < 0 || kd < 0) return;
-
-        it_float periodSeconds = (it_float) samplePeriod / 1000;
         this->k_proportional = kp;
-        this->k_integral     = ki * periodSeconds;
-        this->k_derivative   = kd / periodSeconds;
+        this->k_integral     = ki;
+        this->k_derivative   = kd;
 
         if (direction == REVERSE) {
             k_proportional = 0 - k_proportional;
@@ -131,9 +126,6 @@ public:
     void setSamplePeriod(unsigned long period)
     {
         if (period > 0) {
-            it_float ratio = (it_float) period / samplePeriod;
-            k_integral   *= ratio;
-            k_derivative /= ratio;
             samplePeriod = period;
         }
     }

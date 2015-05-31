@@ -14,7 +14,7 @@ Cubensis* cube;
 void setup() {
     cube = new Cubensis();
     cube->startMotors();
-    cube->calibrate(10000);
+    cube->calibrate(5000);
     cube->start();
 }
 

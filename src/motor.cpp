@@ -4,44 +4,49 @@
 
 #include "motor.h"
 
-bool Motor::is_kill = false;
-uint8_t Motor::throttle = 0;
+int Motor::throttlePinValue = 0;
 
+Motor::Motor(uint8_t pin)
+    : is_kill(false),
+      servoPin(pin),
+      throttle(0)
+{}
 
-Motor::Motor(uint8_t pin) {
-    servo.attach(pin);
-}
-
-void Motor::setError(it_float rate_error) {
-        error = throttle + rate_error;
-        if (error > THROTTLE_MAX) {
-            error = THROTTLE_MAX;
-        } else if (error < THROTTLE_MIN) {
-            error = THROTTLE_MIN;
-        }
-
-        servo.write(error);
-};
-
-void Motor::start() {
+void Motor::init() {
+    servo.attach(servoPin);
     servo.write(MOTOR_START_THROTTLE1);
 }
 
-uint8_t Motor::getThrottle() {
-    return throttle + error;
+int Motor::set() {
+    throttle = (int) map(analogRead(THROTTLE_PIN), 0, 1023, THROTTLE_MIN, THROTTLE_MAX);
+    servo.write(throttle);
+    return throttle;
 }
 
-void Motor::setThrottle(uint8_t value) {
+int Motor::set(int value) {
+    if (is_kill) return -1;
+
     throttle = value;
+    if (throttle > THROTTLE_MAX) {
+        throttle = THROTTLE_MAX;
+    } else if (throttle < THROTTLE_MIN) {
+        throttle = THROTTLE_MIN;
+    }
+
+    servo.write(throttle);
+    return throttle;
 }
 
-void Motor::setThrottle() {
-//    throttle = 50;
-
-    throttle = map(analogRead(THROTTLE_PIN), 0, 1023, THROTTLE_MIN, THROTTLE_MAX);
+int Motor::getThrottle() {
+    return servo.read();
 }
 
 void Motor::kill(bool doKill) {
     throttle = THROTTLE_KILL;
     is_kill = doKill;
+}
+
+int Motor::getThrottlePinValue() {
+    throttlePinValue = (int) map(analogRead(THROTTLE_PIN), 0, 1023, THROTTLE_MIN, THROTTLE_MAX);
+    return throttlePinValue;
 }

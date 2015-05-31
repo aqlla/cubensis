@@ -26,22 +26,23 @@
 class Motor
 {
 public:
-    Motor(uint8_t pin);
+    static int throttlePinValue;
 
-    void start();
-    void setError(it_float=0);
-    uint8_t getThrottle();
-    static void setThrottle(uint8_t);
-    static void setThrottle();
-    static void kill(bool=true);
+    Motor(uint8_t pin);
+    void init();
+    int set();
+    int set(int);
+//    static int setAll();
+//    static int setAll(int);
+    int getThrottle();
+    void kill(bool=true);
+    static int getThrottlePinValue();
 
 private:
     Servo servo;
-    uint8_t pin;
-
-    uint8_t error;
-    static uint8_t throttle;
-    static bool is_kill;
+    uint8_t servoPin;
+    int throttle;
+    bool is_kill;
 };
 
 
