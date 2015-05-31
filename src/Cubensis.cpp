@@ -26,29 +26,26 @@ Cubensis::Cubensis()
     // Initialize IMU sensors.
     imu1 = new IMU(IMU_ADDR_AD0_LOW);
     imu2 = new IMU(IMU_ADDR_AD0_HIGH);
-    bool imu1Status = imu1->init();
-    bool imu2Status = imu2->init();
-
 
     // Set kill pin mode to input
     pinMode(KILL_PIN, INPUT);
 
 
     // Verify that all subsystems are working.
-    if (imu1Status != IMU_STATUS_OK || imu2Status != IMU_STATUS_OK) {
+    if (!imu1->ok() || !imu2->ok()) {
         status = CUBENSIS_STATUS_ERROR_BOTH_IMU;
 
         #if CUBENSIS_DBG!=DBG_NONE
         CUBE_PRINTLN("ERROR: BOTH IMUS.");
         #endif
 
-        if (imu1Status == IMU_STATUS_OK) {
+        if (imu1->ok()) {
             status = CUBENSIS_STATUS_ERROR_IMU2;
 
             #if CUBENSIS_DBG!=DBG_NONE
             CUBE_PRINTLN("ERROR: IMU2.");
             #endif
-        } else if (imu2Status == IMU_STATUS_OK) {
+        } else if (imu2->ok()) {
             status = CUBENSIS_STATUS_ERROR_IMU1;
 
             #if CUBENSIS_DBG!=DBG_NONE
