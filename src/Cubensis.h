@@ -38,23 +38,16 @@
 #define CUBENSIS_STATUS_ERROR_IMU2 		3
 #define CUBENSIS_STATUS_ERROR_BOTH_IMU  4
 
-#define IMU1_ADDR MPU6050_ADDRESS_AD0_LOW
-#define IMU2_ADDR MPU6050_ADDRESS_AD0_HIGH
-
-#define USE_KILL_SWITCH false
+#define USE_KILL_SWITCH true
 #define KILL_SIGNAL LOW
 #define KILL_PIN 2
-#define THROTTLE_PIN 2
-#define THROTTLE_MIN 10
-#define THROTTLE_MAX 125
-#define THROTTLE_KILL 10
 
 class Cubensis {
 public:
     Cubensis();
 
     void startMotors();
-    void calibrate(unsigned long timeToCalibrate);
+    void calibrateSensors(unsigned long calibrationTime);
     void start();
     void update();
     void kill();

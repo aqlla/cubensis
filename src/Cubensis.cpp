@@ -13,12 +13,6 @@ Cubensis::Cubensis()
      motor3(MOTOR3_PIN),
      motor4(MOTOR4_PIN)
 {
-    status = CUBENSIS_STATUS_SLEEP;
-    imu1 = new IMU(IMU1_ADDR);
-    imu2 = new IMU(IMU2_ADDR);
-    bool imu1Status = imu1->init();
-    bool imu2Status = imu2->init();
-
     Wire.begin();   // use i2cdev fastwire implementation
     TWBR = 24;      // 400kHz I2C clock (200kHz if CPU is 8MHz)
 
@@ -27,32 +21,51 @@ Cubensis::Cubensis()
     CUBE_PRINTLN("Starting Cubensis");
     #endif
 
+    status = CUBENSIS_STATUS_SLEEP;
+
+    // Initialize IMU sensors.
+    imu1 = new IMU(IMU_ADDR_AD0_LOW);
+    imu2 = new IMU(IMU_ADDR_AD0_HIGH);
+    bool imu1Status = imu1->init();
+    bool imu2Status = imu2->init();
+
+
+    // Set kill pin mode to input
+    pinMode(KILL_PIN, INPUT);
+
+
+    // Verify that all subsystems are working.
     if (imu1Status != IMU_STATUS_OK || imu2Status != IMU_STATUS_OK) {
         status = CUBENSIS_STATUS_ERROR_BOTH_IMU;
+
         #if CUBENSIS_DBG!=DBG_NONE
         CUBE_PRINTLN("ERROR: BOTH IMUS.");
         #endif
 
         if (imu1Status == IMU_STATUS_OK) {
             status = CUBENSIS_STATUS_ERROR_IMU2;
+
             #if CUBENSIS_DBG!=DBG_NONE
             CUBE_PRINTLN("ERROR: IMU2.");
             #endif
         } else if (imu2Status == IMU_STATUS_OK) {
             status = CUBENSIS_STATUS_ERROR_IMU1;
+
             #if CUBENSIS_DBG!=DBG_NONE
             CUBE_PRINTLN("ERROR: IMU1.");
             #endif
         }
     } else {
+        // Initialize PID
         error_stabx = 0;
         error_ratex = 0;
         setpoint_stabx = 0;
         pid_stabx = new PID(&orientation.x,  &error_stabx, &setpoint_stabx, 1, 0, 0);
         pid_ratex = new PID(&rotationRate.x, &error_ratex, &error_stabx, 0.375, 0, 0);
 
-        pinMode(KILL_PIN, INPUT);
+        // Update Status
         status = CUBENSIS_STATUS_RUNNING;
+
         #if CUBENSIS_DBG!=DBG_NONE
         CUBE_PRINTLN("Cubensis Started successfully\n");
         #endif
@@ -60,6 +73,11 @@ Cubensis::Cubensis()
 }
 
 
+/**
+ * Start Motors.
+ * Attach all motor speed controllers to the correct pin and write the correct
+ * startup value to turn them on.
+ */
 void Cubensis::startMotors()
 {
     motor1.init();
@@ -72,12 +90,29 @@ void Cubensis::startMotors()
     #endif
 }
 
-void Cubensis::calibrate(unsigned long timeToCalibrate)
+
+/**
+ * Calibrate Sensors.
+ *
+ * Allows sensors to adjust to noise and drift by reading their values while
+ * the quadrotor is in a stable and level state. Sensors will set offsets
+ * reflecting the erroneous data they read during the requested time period.
+ *
+ * @param calibrationTime: amount of time to calibrate the sensors.
+ */
+void Cubensis::calibrateSensors(unsigned long calibrationTime)
 {
-    imu1->calibrate(timeToCalibrate);
-    imu2->calibrate(timeToCalibrate);
+    imu1->calibrate(calibrationTime);
+    imu2->calibrate(calibrationTime);
 }
 
+
+/**
+ * Start Quadrotor.
+ *
+ * Initiates normal quadrotoring operation. Starts the sensors' previous time
+ * value so the first elapsed time measurement will be closer to accurate.
+ */
 void Cubensis::start()
 {
     imu1->startTime();
@@ -86,6 +121,16 @@ void Cubensis::start()
 }
 
 
+/**
+ * Update State.
+ *
+ * Checks the kill pin to verify that procession may be done safely. If not,
+ * the kill method is called, halting normal operation. If the switch is not
+ * set to kill, the current estimation of the quadrotor's orientation state is
+ * updated, and appropriate reactions are made. Calls update methods on all
+ * sensors, computes the new error value from the PID controllers, and then
+ * sets the throttle values of the motors accordingly.
+ */
 void Cubensis::update()
 {
     if (status != CUBENSIS_STATUS_KILL) {
@@ -101,12 +146,10 @@ void Cubensis::update()
         pid_ratex->computeError();
 
         Motor::getThrottlePinValue();
-        throttle = Motor::throttlePinValue;
-
-        motor1.set(throttle);
-        motor2.set(throttle + error_ratex);
-        motor3.set(throttle);
-        motor4.set(throttle - error_ratex);
+        motor1.set(0);
+        motor2.set(error_ratex);
+        motor3.set(0);
+        motor4.set(-error_ratex);
     } else if (digitalRead(KILL_PIN) != KILL_SIGNAL) {
         // TODO: un kill
         //Motor::kill(false);
@@ -119,6 +162,12 @@ void Cubensis::update()
 }
 
 
+/**
+ * Halt and Catch Fire.
+ *
+ * Stops normal quadrotoring operations to prevent loss of blood. Mostly just
+ * attempts to stop the propellors from spinning at deadly RPMs.
+ */
 void Cubensis::kill() {
     status = CUBENSIS_STATUS_KILL;
     motor1.kill();
@@ -128,6 +177,10 @@ void Cubensis::kill() {
 }
 
 
+/**
+ * Print.
+ * Prints state information. Duh.
+ */
 void Cubensis::print()
 {
     now = millis();

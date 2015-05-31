@@ -23,10 +23,10 @@ int Motor::set() {
     return throttle;
 }
 
-int Motor::set(int value) {
+int Motor::set(int error) {
     if (is_kill) return -1;
 
-    throttle = value;
+    throttle = throttlePinValue + error;
     if (throttle > THROTTLE_MAX) {
         throttle = THROTTLE_MAX;
     } else if (throttle < THROTTLE_MIN) {

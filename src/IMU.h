@@ -14,19 +14,12 @@
 #define IMU_STATUS_CONNECTION_ERROR 2
 #define IMU_STATUS_ADDRESS_ERROR    3
 
-#define ADDR_AD0_LOW  MPU6050_ADDRESS_AD0_LOW
-#define ADDR_AD0_HIGH MPU6050_ADDRESS_AD0_HIGH
+#define IMU_ADDR_AD0_LOW  MPU6050_ADDRESS_AD0_LOW
+#define IMU_ADDR_AD0_HIGH MPU6050_ADDRESS_AD0_HIGH
 
+#define TIME_FUNC millis
+#define TIME_TO_SEC 1000.0
 
-#if defined(Arduino_h)
-    #ifdef TIME_IN_MICROS
-        #define TIME_FUNC micros
-        #define TIME_TO_SEC 1000000.0
-    #else
-        #define TIME_FUNC millis
-        #define TIME_TO_SEC 1000.0
-    #endif
-#endif
 
 
 class IMU
@@ -35,28 +28,26 @@ public:
     short status;
     short address;
 
-    ITVec3<it_float>*complementary;
-    ITVec3<it_float>* orientation;
-    ITVec3<it_float>* rotation;
-    AccelerationVec*  acceleration;
+    ITVec3<it_float> *complementary;
+    ITVec3<it_float> *orientation;
+    ITVec3<it_float> *rotation;
+    AccelerationVec  *acceleration;
 
-    IMU(short address): status(IMU_STATUS_SLEEP)
+    IMU(short address)
+            :status(IMU_STATUS_SLEEP)
     {
-        if (address != ADDR_AD0_LOW && address != ADDR_AD0_HIGH) {
+        device = new MPU6050();
+        gyroData  = new ITVec3<int16_t>();
+        accelData = new ITVec3<int16_t>();
+        rotation = new ITVec3<it_float>();
+        gyroOffset  = new ITVec3<it_float>();
+        accelOffset = new ITVec3<it_float>();
+        acceleration = new AccelerationVec();
+        orientation  = new ITVec3<it_float>();
+        complementary = new ITVec3<it_float>();
+
+        if (address != IMU_ADDR_AD0_LOW && address != IMU_ADDR_AD0_HIGH) {
             status = IMU_STATUS_ADDRESS_ERROR;
-        } else {
-            device = new MPU6050();
-
-            rotation = new ITVec3<it_float>();
-            acceleration = new AccelerationVec();
-            orientation  = new ITVec3<it_float>();
-            complementary = new ITVec3<it_float>();
-
-            gyroOffset  = new ITVec3<it_float>();
-            accelOffset = new ITVec3<it_float>();
-
-            gyroData  = new ITVec3<int16_t>();
-            accelData = new ITVec3<int16_t>();
         }
     };
 
@@ -76,7 +67,7 @@ public:
 
     /**
      * Initialize.
-     * 
+     *
      * Attempt to wake IMU and check if a successful connection to the device
      * could be made.
      *
