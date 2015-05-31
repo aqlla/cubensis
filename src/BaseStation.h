@@ -57,7 +57,7 @@ private:
         mf.b[c1++] = in[c2++];
         mf.b[c1++] = in[c2++];
         out[c3++] = mf.val;
-        cc
+        
         c1 = 0;
         mf.b[c1++] = in[c2++];
         mf.b[c1++] = in[c2++];
