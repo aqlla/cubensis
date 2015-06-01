@@ -1,5 +1,5 @@
 .sconsign.dblite
-
+.pioenvs/
 ### Intellij ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm
 

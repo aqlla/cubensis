@@ -2,215 +2,77 @@
 #define __CUBENSIS_H__
 
 #include "Arduino.h"
-#include "Servo.h"
-#include "itvec.h"
 #include "pid.h"
 #include "imu.h"
 
-#define CUBENSIS_DEBUG
+#define DBG_NONE            0
+#define DBG_READABLE        1
+#define DBG_ARSILISCOPE     2
+#define CUBENSIS_DBG        DBG_ARSILISCOPE
 
+#if defined(Arduino_h)
+    #if CUBENSIS_DBG==DBG_NONE
+    #define CUBE_PRINT(x)   ;
+    #define CUBE_PRINTLN(x) ;
+    #define PRINT_DELAY     0
+    #else
+    #define START_SERIAL(x) Serial.begin(x);
+    #define CUBE_PRINT(x)   Serial.print(x)
+    #define CUBE_PRINTLN(x) Serial.print(x); Serial.print("\n")
+    #endif
 
-#define IMU1_ADDR MPU6050_ADDRESS_AD0_LOW
-#define IMU2_ADDR MPU6050_ADDRESS_AD0_HIGH
+    #if CUBENSIS_DBG==DBG_ARSILISCOPE
+    #define PRINT_DELAY     100
+    #elif CUBENSIS_DBG==DBG_READABLE
+    #define PRINT_DELAY     450
+    #endif
+#endif
+
 
 #define CUBENSIS_STATUS_KILL 		   -1
 #define CUBENSIS_STATUS_SLEEP 			0
-#define CUBENSIS_STATUS_RUNNING 		1
-#define CUBENSIS_STATUS_ERROR_IMU1 		2
-#define CUBENSIS_STATUS_ERROR_IMU2 		3
-#define CUBENSIS_STATUS_ERROR_BOTH_IMU  4
+#define CUBENSIS_STATUS_READY    		1
+#define CUBENSIS_STATUS_RUNNING 		2
+#define CUBENSIS_STATUS_ERROR_IMU1 		3
+#define CUBENSIS_STATUS_ERROR_IMU2 		4
+#define CUBENSIS_STATUS_ERROR_BOTH_IMU  5
 
-#define KILL_PIN_KILL_SIGNAL LOW
-#define THROTTLE_PIN 2
+#define USE_KILL_SWITCH true
+#define KILL_SIGNAL LOW
 #define KILL_PIN 2
-
-#define MOTOR1_PIN 3
-#define MOTOR2_PIN 5
-#define MOTOR3_PIN 6
-#define MOTOR4_PIN 9
-
-#define THROTTLE_MIN 10
-#define THROTTLE_MAX 125
-#define THROTTLE_KILL 10
-#define MOTOR_START_THROTTLE1 10
-#define MOTOR_START_THROTTLE2 20
 
 class Cubensis {
 public:
+    Cubensis();
+
+    void prepare();
+    void calibrateSensors(unsigned long calibrationTime);
+    void start();
+    void update();
+    void kill();
+    void print();
+
+private:
     IMU* imu1;
     IMU* imu2;
 
-    short status;
-    ITVec3<it_float>* orientation;
-    ITVec3<it_float>* rotationRate;
-
     PID* pid_ratex;
     PID* pid_stabx;
-    it_float rate_error;
-    it_float stab_error;
-    it_float setpoint_stabx;
+    it_float error_ratex;
+    it_float error_stabx;
     it_float setpoint_ratex;
+    it_float setpoint_stabx;
 
-    Servo motor1;
-    Servo motor2;
-    Servo motor3;
-    Servo motor4;
-
-    int motor1_throt;
-    int motor2_throt;
-    int motor3_throt;
-    int motor4_throt;
+    Motor motor1;
+    Motor motor2;
+    Motor motor3;
+    Motor motor4;
 
     int throttle;
 
-    Cubensis() {
-        status = CUBENSIS_STATUS_SLEEP;
-        imu1 = new IMU(IMU1_ADDR);
-        imu2 = new IMU(IMU2_ADDR);
-
-        rate_error = 0;
-        stab_error = 0;
-        setpoint_stabx = 0;
-        setpoint_ratex = 0;
-        orientation = new ITVec3<it_float>();
-        rotationRate = new ITVec3<it_float>();
-
-
-        pid_stabx = new PID(&orientation->x,  &stab_error, &setpoint_stabx, 1, 0, 0);
-        pid_ratex = new PID(&rotationRate->x, &rate_error, &stab_error, .375, 0, .005);
-
-        pinMode(KILL_PIN, INPUT);
-        motor1.attach(MOTOR1_PIN);
-        motor2.attach(MOTOR2_PIN);
-        motor3.attach(MOTOR3_PIN);
-        motor4.attach(MOTOR4_PIN);
-
-        bool imu1Status = imu1->init();
-        bool imu2Status = imu2->init();
-
-        if (imu1Status == IMU_STATUS_OK && imu2Status == IMU_STATUS_OK) {
-            status = CUBENSIS_STATUS_RUNNING;
-        } else if (imu1Status != IMU_STATUS_OK && imu2Status != IMU_STATUS_OK) {
-            status = CUBENSIS_STATUS_ERROR_BOTH_IMU;
-        } else if (imu1Status == IMU_STATUS_OK) {
-            status = CUBENSIS_STATUS_ERROR_IMU2;
-        } else {
-            status = CUBENSIS_STATUS_ERROR_IMU1;
-        }
-    };
-
-
-    void startMotors1() {
-        motor1.write(MOTOR_START_THROTTLE1);
-        motor2.write(MOTOR_START_THROTTLE1);
-        motor3.write(MOTOR_START_THROTTLE1);
-        motor4.write(MOTOR_START_THROTTLE1);
-        motor1_throt = MOTOR_START_THROTTLE1;
-        motor2_throt = MOTOR_START_THROTTLE1;
-        motor3_throt = MOTOR_START_THROTTLE1;
-        motor4_throt = MOTOR_START_THROTTLE1;
-
-        #ifdef CUBENSIS_DEBUG
-        arsiliscope();
-        #endif
-    };
-
-
-    void startMotors2() {
-        motor1.write(MOTOR_START_THROTTLE2);
-        motor2.write(MOTOR_START_THROTTLE2);
-        motor3.write(MOTOR_START_THROTTLE2);
-        motor4.write(MOTOR_START_THROTTLE2);
-        motor1_throt = MOTOR_START_THROTTLE2;
-        motor2_throt = MOTOR_START_THROTTLE2;
-        motor3_throt = MOTOR_START_THROTTLE2;
-        motor4_throt = MOTOR_START_THROTTLE2;
-
-        #ifdef CUBENSIS_DEBUG
-        arsiliscope();
-        #endif
-    };
-
-    void calibrate(unsigned long timeToCalibrate) {
-        imu1->calibrate(timeToCalibrate);
-        imu2->calibrate(timeToCalibrate);
-    };
-
-    void start() {
-        imu1->startTime();
-        imu2->startTime();
-        update();
-    };
-
-
-    void update() {
-        if (digitalRead(KILL_PIN) == KILL_PIN_KILL_SIGNAL) {
-            kill();
-        } else if (status != CUBENSIS_STATUS_KILL) {
-            imu1->updateOrientation();
-            imu2->updateOrientation();
-
-            orientation->x = (imu1->complementary->x + imu2->complementary->x) / 2.0;
-            orientation->y = (imu1->complementary->y + imu2->complementary->y) / 2.0;
-            orientation->z = (imu1->complementary->z + imu2->complementary->z) / 2.0;
-
-            rotationRate->x = (imu1->rotation->x + imu2->rotation->x) / 2.0;
-            rotationRate->y = (imu1->rotation->y + imu2->rotation->y) / 2.0;
-            rotationRate->z = (imu1->rotation->z + imu2->rotation->z) / 2.0;
-
-            pid_stabx->compute();
-            pid_ratex->compute();
-
-            throttle = (int) map(analogRead(THROTTLE_PIN), 0, 1023, THROTTLE_MIN, THROTTLE_MAX);
-
-            motor1_throt = throttle;
-            motor2_throt = max(min(throttle - rate_error, THROTTLE_MAX), THROTTLE_MIN);
-            motor3_throt = throttle;
-            motor4_throt = max(min(throttle + rate_error, THROTTLE_MAX), THROTTLE_MIN);
-
-            motor1.write(motor1_throt);
-            motor2.write(motor2_throt);
-            motor3.write(motor3_throt);
-            motor4.write(motor4_throt);
-        }
-
-        if (status == CUBENSIS_STATUS_KILL && digitalRead(KILL_PIN) != KILL_PIN_KILL_SIGNAL) {
-            status = CUBENSIS_STATUS_RUNNING;
-        }
-    };
-
-    void kill() {
-        throttle = 0;
-        motor1_throt = THROTTLE_KILL;
-        motor2_throt = THROTTLE_KILL;
-        motor3_throt = THROTTLE_KILL;
-        motor4_throt = THROTTLE_KILL;
-
-        motor1.write(THROTTLE_KILL);
-        motor2.write(THROTTLE_KILL);
-        motor3.write(THROTTLE_KILL);
-        motor4.write(THROTTLE_KILL);
-
-        status = CUBENSIS_STATUS_KILL;
-    };
-
-    void arsiliscope() {
-        Serial.print("{\"roll\": ");
-        Serial.print(orientation->x);
-        Serial.print(",\"pitch\": ");
-        Serial.print(stab_error);
-        Serial.print(",\"yaw\": ");
-        Serial.print(rate_error);
-        Serial.print(",\"motor1\": ");
-        Serial.print(motor1_throt);
-        Serial.print(",\"motor2\": ");
-        Serial.print(motor2_throt);
-        Serial.print(",\"motor3\": ");
-        Serial.print(motor3_throt);
-        Serial.print(",\"motor4\": ");
-        Serial.print(motor4_throt);
-        Serial.println("}");
-    };
+    short status;
+    static unsigned long lastPrint;
+    static unsigned long now;
 };
 
 #endif

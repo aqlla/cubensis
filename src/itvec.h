@@ -6,8 +6,7 @@
 
 #if defined(Arduino_h)
 #define VEC_PRINT(x)    Serial.print(x)
-#define VEC_PRINTLN(x)  Serial.print(x); \
-                            Serial.print("\n")
+#define VEC_PRINTLN(x)  Serial.print(x); Serial.print("\n")
 #else
     #include <iostream>
     #define VEC_PRINT(x)    std::cout << x
