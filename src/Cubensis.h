@@ -76,8 +76,8 @@ public:
         rotationRate = new ITVec3<it_float>();
 
 
-        pid_stabx = new PID(&orientation->x,  &stab_error, &setpoint_stabx, 10, 0, 0);
-        pid_ratex = new PID(&rotationRate->x, &rate_error, &stab_error, 70, 50, 1);
+        pid_stabx = new PID(&orientation->x,  &stab_error, &setpoint_stabx, 1, 0, 0);
+        pid_ratex = new PID(&rotationRate->x, &rate_error, &stab_error, .375, 0, .005);
 
         pinMode(KILL_PIN, INPUT);
         motor1.attach(MOTOR1_PIN);
@@ -131,9 +131,9 @@ public:
         #endif
     };
 
-    void calibrate(short iterations) {
-        imu1->calibrate(iterations);
-        imu2->calibrate(iterations);
+    void calibrate(unsigned long timeToCalibrate) {
+        imu1->calibrate(timeToCalibrate);
+        imu2->calibrate(timeToCalibrate);
     };
 
     void start() {
@@ -150,9 +150,9 @@ public:
             imu1->updateOrientation();
             imu2->updateOrientation();
 
-            orientation->x = (imu1->complementaryAngle->x + imu2->complementaryAngle->x) / 2.0;
-            orientation->y = (imu1->complementaryAngle->y + imu2->complementaryAngle->y) / 2.0;
-            orientation->z = (imu1->complementaryAngle->z + imu2->complementaryAngle->z) / 2.0;
+            orientation->x = (imu1->complementary->x + imu2->complementary->x) / 2.0;
+            orientation->y = (imu1->complementary->y + imu2->complementary->y) / 2.0;
+            orientation->z = (imu1->complementary->z + imu2->complementary->z) / 2.0;
 
             rotationRate->x = (imu1->rotation->x + imu2->rotation->x) / 2.0;
             rotationRate->y = (imu1->rotation->y + imu2->rotation->y) / 2.0;

@@ -31,7 +31,7 @@ public:
     PID(it_float* input, it_float* output, it_float* setpoint, it_float kp, it_float ki, it_float kd)
             :input(input), output(output), setpoint(setpoint)
     {
-        samplePeriod = 50;
+        samplePeriod = 25;
         setOutputLimits(-255, 255);
 
         setMode(AUTOMATIC);

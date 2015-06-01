@@ -41,9 +41,7 @@ void setup() {
 
 
     cube->startMotors1();
-    cube->calibrate(1000);
-    delay(4000);
-
+    cube->calibrate(8000);
     cube->startMotors2();
     cube->start();
     lastPrint = millis();
@@ -53,14 +51,14 @@ void setup() {
 void loop() {
     cube->update();
 
-    unsigned long now = millis();
-    if (now - lastPrint > PRINT_DELAY) {
-        #ifdef ARSILISCOPE
-        cube->arsiliscope();
-        #endif
-
-        lastPrint = now;
-    }
+//    unsigned long now = millis();
+//    if (now - lastPrint > PRINT_DELAY) {
+//        #ifdef ARSILISCOPE
+//        cube->arsiliscope();
+//        #endif
+//
+//        lastPrint = now;
+//    }
 }
 
 

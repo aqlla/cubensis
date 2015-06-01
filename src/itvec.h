@@ -4,6 +4,16 @@
 #include "Arduino.h"
 #include "math.h"
 
+#if defined(Arduino_h)
+#define VEC_PRINT(x)    Serial.print(x)
+#define VEC_PRINTLN(x)  Serial.print(x); \
+                            Serial.print("\n")
+#else
+    #include <iostream>
+    #define VEC_PRINT(x)    std::cout << x
+    #define VEC_PRINTLN(x)  std::cout << x << std::endl;
+#endif
+
 #define RAD2DEG 57.29577
 
 typedef double it_float;
@@ -16,6 +26,11 @@ struct ITVec3
     T& y = arr[1];
     T& z = arr[2];
 
+
+    ITVec3(ITVec3<T> &vec3)
+            : arr{vec3.x, vec3.y, vec3.z}
+    {};
+
     ITVec3(T x=0, T y=0, T z=0)
             : arr{x, y, z}
     {};
@@ -23,6 +38,8 @@ struct ITVec3
     ITVec3(T* arr)
             : arr{arr[0], arr[1], arr[2]}
     {};
+
+    virtual ~ITVec3() {};
 
     void set(T x, T y, T z) {
         this->x = x;
@@ -60,6 +77,13 @@ struct ITVec3
     };
 
     // Operator overloading
+    virtual void operator=(const ITVec3<T>& rhs)
+    {
+        x = rhs.x;
+        y = rhs.y;
+        z = rhs.z;
+    };
+
     ITVec3<T> operator+(const ITVec3<T>& rhs)
     {
         return ITVec3<T>(x + rhs.x, y + rhs.y, z + rhs.z);
@@ -188,14 +212,26 @@ struct ITVec3
     };
 
     void print() {
-        Serial.print("x: ");
-        Serial.print(x);
-        Serial.print(", y: ");
-        Serial.print(y);
-        Serial.print(", z: ");
-        Serial.print(z);
-        Serial.print("\n");
+        VEC_PRINT("x: ");
+        VEC_PRINT(x);
+        VEC_PRINT(", y: ");
+        VEC_PRINT(y);
+        VEC_PRINT(", z: ");
+        VEC_PRINT(z);
+        VEC_PRINTLN("\n");
     };
+};
+
+template <typename T>
+ITVec3<T> operator-(const T lhs, const ITVec3<T>& rhs)
+{
+    return ITVec3<T>(lhs - rhs.x, lhs - rhs.y, lhs - rhs.z);
+};
+
+template <typename T>
+ITVec3<T> operator-(const ITVec3<T>& lhs, const T rhs)
+{
+    return ITVec3<T>(lhs.x - rhs, lhs.y - rhs, lhs.z - rhs);
 };
 
 
@@ -209,6 +245,15 @@ struct AccelerationVec: public ITVec3<it_float> {
 
     double pitch() {
         return atan2(x, sqrt(y*y + z*z)) * RAD2DEG;
+    };
+
+    // Operator overloading
+    template <typename T>
+    void operator=(const ITVec3<T>& rhs)
+    {
+        x = rhs.x;
+        y = rhs.y;
+        z = rhs.z;
     };
 };
 
