@@ -4,6 +4,7 @@
 #include "Arduino.h"
 #include "pid.h"
 #include "imu.h"
+#include "motor.h"
 
 #define DBG_NONE            0
 #define DBG_READABLE        1
