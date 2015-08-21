@@ -8,10 +8,11 @@ unsigned long Cubensis::lastPrint = millis();
 unsigned long Cubensis::now = 0;
 
 Cubensis::Cubensis()
-    :motor1(MOTOR1_PIN),
-     motor2(MOTOR2_PIN),
-     motor3(MOTOR3_PIN),
-     motor4(MOTOR4_PIN)
+        : status{CubensisStatus::SLEEP},
+        motor1{MOTOR1_PIN},
+        motor2{MOTOR2_PIN},
+        motor3{MOTOR3_PIN},
+        motor4{MOTOR4_PIN}
 {
     Wire.begin();   // use i2cdev fastwire implementation
     TWBR = 24;      // 400kHz I2C clock (200kHz if CPU is 8MHz)
@@ -21,47 +22,23 @@ Cubensis::Cubensis()
     CUBE_PRINTLN("Starting Cubensis");
     #endif
 
-    status = CUBENSIS_STATUS_SLEEP;
 
     // Initialize IMU sensors.
-    imu1 = new IMU(IMU_ADDR_AD0_LOW);
-    imu2 = new IMU(IMU_ADDR_AD0_HIGH);
+    imu1 = new IMU{IMU_ADDR_AD0_LOW};
+    imu2 = new IMU{IMU_ADDR_AD0_HIGH};
 
     // Set kill pin mode to input
     pinMode(KILL_PIN, INPUT);
 
 
     // Verify that all subsystems are working.
-    if (!imu1->ok() || !imu2->ok()) {
-        status = CUBENSIS_STATUS_ERROR_BOTH_IMU;
-
-        #if CUBENSIS_DBG!=DBG_NONE
-        CUBE_PRINTLN("ERROR: BOTH IMUS.");
-        #endif
-
-        if (imu1->ok()) {
-            status = CUBENSIS_STATUS_ERROR_IMU2;
-
-            #if CUBENSIS_DBG!=DBG_NONE
-            CUBE_PRINTLN("ERROR: IMU2.");
-            #endif
-        } else if (imu2->ok()) {
-            status = CUBENSIS_STATUS_ERROR_IMU1;
-
-            #if CUBENSIS_DBG!=DBG_NONE
-            CUBE_PRINTLN("ERROR: IMU1.");
-            #endif
-        }
-    } else {
+    if (check_status() == CubensisStatus::READY) {
         // Initialize PID
         error_stabx = 0;
         error_ratex = 0;
         setpoint_stabx = 0;
-        pid_stabx = new PID(&orientation.x,  &error_stabx, &setpoint_stabx, 1, 0, 0);
-        pid_ratex = new PID(&rotationRate.x, &error_ratex, &error_stabx, 0.375, 0, 0);
-
-        // Update Status
-        status = CUBENSIS_STATUS_RUNNING;
+        pid_stabx = new PID{&orientation.x,  &error_stabx, &setpoint_stabx, 1, 0, 0};
+        pid_ratex = new PID{&rotationRate.x, &error_ratex, &error_stabx, 0.375, 0, 0};
 
         #if CUBENSIS_DBG!=DBG_NONE
         CUBE_PRINTLN("Cubensis Started successfully\n");
@@ -69,6 +46,23 @@ Cubensis::Cubensis()
     }
 }
 
+auto Cubensis::check_status() -> CubensisStatus {
+    if (imu1->ok() && imu2->ok()) {
+        status = CubensisStatus::READY;
+    } else {
+        status = CubensisStatus::ERROR;
+
+        if (!imu1->ok()) {
+            #if CUBENSIS_DBG!=DBG_NONE
+            CUBE_PRINTLN("ERROR: IMU1.");
+            #endif
+        } else if (!imu2->ok()) {
+            #if CUBENSIS_DBG!=DBG_NONE
+            CUBE_PRINTLN("ERROR: IMU2.");
+            #endif
+        }
+    }
+}
 
 /**
  * Prepare Quadrotor for Flight.
@@ -81,6 +75,8 @@ void Cubensis::prepare()
     motor2.init();
     motor3.init();
     motor4.init();
+
+    status = CubensisStatus::RUNNING;
 
     #if CUBENSIS_DBG!=DBG_NONE
     print();
@@ -130,7 +126,7 @@ void Cubensis::start()
  */
 void Cubensis::update()
 {
-    if (status != CUBENSIS_STATUS_KILL) {
+    if (status != CubensisStatus::KILL) {
         if (USE_KILL_SWITCH && digitalRead(KILL_PIN) == KILL_SIGNAL)
             return kill();
 
@@ -150,7 +146,7 @@ void Cubensis::update()
     } else if (digitalRead(KILL_PIN) != KILL_SIGNAL) {
         // TODO: un kill
         //Motor::kill(false);
-        status = CUBENSIS_STATUS_RUNNING;
+        status = CubensisStatus::RUNNING;
     }
 
     #if CUBENSIS_DBG!=DBG_NONE
@@ -166,7 +162,7 @@ void Cubensis::update()
  * attempts to stop the propellors from spinning at deadly RPMs.
  */
 void Cubensis::kill() {
-    status = CUBENSIS_STATUS_KILL;
+    status = CubensisStatus::KILL;
     motor1.kill();
     motor2.kill();
     motor3.kill();

@@ -7,7 +7,8 @@
 #define __IT_PID__
 
 #include "Arduino.h"
-#include "itvec.h"
+
+using it_float = double;
 
 enum ControllerDirection { DIRECT, REVERSE };
 enum ControllerMode { AUTOMATIC, MANUAL };

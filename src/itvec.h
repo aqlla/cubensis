@@ -15,7 +15,7 @@
 
 #define RAD2DEG 57.29577
 
-typedef double it_float;
+using it_float = double;
 
 template <typename T>
 struct ITVec3

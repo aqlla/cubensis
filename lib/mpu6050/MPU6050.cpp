@@ -518,7 +518,7 @@ void MPU6050::setMotionDetectionDuration(uint8_t duration) {
  * interrupt both when Zero Motion is first detected and when Zero Motion is no
  * longer detected.
  *
- * When a zero motion event is detected, a Zero Motion Status will be indicated
+ * When a zero motion event is detected, a Zero Motion CubensisStatus will be indicated
  * in the MOT_DETECT_STATUS register (Register 97). When a motion-to-zero-motion
  * condition is detected, the status bit is set to 1. When a zero-motion-to-
  * motion condition is detected, the status bit is set to 0.

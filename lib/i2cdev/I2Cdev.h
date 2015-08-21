@@ -223,7 +223,7 @@ class I2Cdev {
     #define TWI_FREQ            100000L
     #define TWI_BUFFER_LENGTH   32
     
-    /* TWI Status is in TWSR, in the top 5 bits: TWS7 - TWS3 */
+    /* TWI CubensisStatus is in TWSR, in the top 5 bits: TWS7 - TWS3 */
     
     #define TW_STATUS_MASK              (_BV(TWS7)|_BV(TWS6)|_BV(TWS5)|_BV(TWS4)|_BV(TWS3))
     #define TW_STATUS                   (TWSR & TW_STATUS_MASK)

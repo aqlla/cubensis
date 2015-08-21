@@ -30,17 +30,18 @@
 #endif
 
 
-#define CUBENSIS_STATUS_KILL 		   -1
-#define CUBENSIS_STATUS_SLEEP 			0
-#define CUBENSIS_STATUS_READY    		1
-#define CUBENSIS_STATUS_RUNNING 		2
-#define CUBENSIS_STATUS_ERROR_IMU1 		3
-#define CUBENSIS_STATUS_ERROR_IMU2 		4
-#define CUBENSIS_STATUS_ERROR_BOTH_IMU  5
-
 #define USE_KILL_SWITCH true
 #define KILL_SIGNAL LOW
 #define KILL_PIN 2
+
+enum class CubensisStatus
+{
+    KILL = -1,
+    SLEEP,
+    READY,
+    RUNNING,
+    ERROR
+};
 
 class Cubensis {
 public:
@@ -52,10 +53,14 @@ public:
     void update();
     void kill();
     void print();
+    CubensisStatus check_status();
 
 private:
     IMU* imu1;
     IMU* imu2;
+
+    ITVec3<it_float> orientation;
+    ITVec3<it_float> rotationRate;
 
     PID* pid_ratex;
     PID* pid_stabx;
@@ -71,9 +76,9 @@ private:
 
     int throttle;
 
-    short status;
-    static unsigned long lastPrint;
-    static unsigned long now;
+    CubensisStatus status;
+    unsigned long lastPrint;
+    unsigned long now;
 };
 
 #endif
