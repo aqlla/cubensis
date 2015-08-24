@@ -33,6 +33,7 @@
 #define USE_KILL_SWITCH true
 #define KILL_SIGNAL HIGH
 #define KILL_PIN 2
+#define STATUS_LED_PIN 13
 
 class Cubensis {
 public:
@@ -51,8 +52,6 @@ public:
     void calibrate_sensors(unsigned long);
     void start();
     void update();
-    void kill();
-    void print();
     Status check_status();
 
 private:
@@ -70,7 +69,6 @@ private:
     cfloat setpoint_ratex;
     cfloat setpoint_stabx;
 
-    int throttle;
     Motor motor1;
     Motor motor2;
     Motor motor3;
@@ -79,6 +77,9 @@ private:
     Status status;
     unsigned long lastPrint;
     unsigned long now;
+
+    void kill();
+    void print();
 };
 
 #endif

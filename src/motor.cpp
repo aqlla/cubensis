@@ -4,13 +4,12 @@
 
 #include "motor.h"
 
-int Motor::throttlePinValue = 0;
+uint8_t Motor::throttlePinValue = 0;
 bool Motor::killed = false;
 
 
 Motor::Motor(uint8_t pin)
-    : is_kill{false},
-      servoPin{pin},
+    : servoPin{pin},
       throttle{0}
 {}
 
@@ -19,38 +18,49 @@ void Motor::init() {
     servo.write(MOTOR_START_THROTTLE1);
 }
 
-int Motor::set() {
-    if (is_kill) return 0;
-    throttle = (int) map(analogRead(THROTTLE_PIN), 0, 1023, THROTTLE_MIN, THROTTLE_MAX);
-    servo.write(throttle);
-    return throttle;
-}
-
-int Motor::set(int error) {
-    if (is_kill) return 0;
-
-    throttle = throttlePinValue + error;
-    if (throttle > THROTTLE_MAX) {
-        throttle = THROTTLE_MAX;
-    } else if (throttle < THROTTLE_MIN) {
-        throttle = THROTTLE_MIN;
+uint8_t Motor::set() {
+    if (killed) {
+        throttle = 0;
+        return 0;
     }
 
+    throttle = get_mapped_throttle_value();
     servo.write(throttle);
     return throttle;
 }
 
-int Motor::getThrottle() {
-    return servo.read();
-}
+uint8_t Motor::set_error(const cfloat error) {
+    if (killed) {
+        throttle = 0;
+        return 0;
+    }
 
-void Motor::kill(bool doKill) {
-    throttle = THROTTLE_KILL;
-    is_kill = doKill;
+    int16_t adjustedThrottle = throttlePinValue + (int16_t) error;
+
+    if (adjustedThrottle > THROTTLE_MAX)
+        throttle = THROTTLE_MAX;
+    else if (adjustedThrottle < THROTTLE_MIN)
+        throttle = THROTTLE_MIN;
+    else
+        throttle = (uint8_t) adjustedThrottle;
+
     servo.write(throttle);
+    return throttle;
 }
 
-int Motor::getThrottlePinValue() {
-    throttlePinValue = (int) map(analogRead(THROTTLE_PIN), 0, 1023, THROTTLE_MIN, THROTTLE_MAX);
-    return throttlePinValue;
+void Motor::kill(const bool do_kill) {
+    killed = do_kill;
+    if (do_kill)
+        throttlePinValue = THROTTLE_KILL;
+    else
+        read_throttle_pin();
+
+}
+
+uint8_t Motor::read_throttle_pin() {
+    return throttlePinValue = get_mapped_throttle_value();
+}
+
+uint8_t Motor::get_mapped_throttle_value() {
+    return (uint8_t) map(analogRead(THROTTLE_PIN), 0, 1023, THROTTLE_MIN, THROTTLE_MAX);
 }

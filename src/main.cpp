@@ -19,7 +19,8 @@ Cubensis* cube;
 #endif
 
 
-void setup() {
+void setup()
+{
 #if defined(STATIC_ALLOC)
     cube.prepare();
     cube.calibrateSensors(1000);
@@ -32,7 +33,8 @@ void setup() {
 #endif
 }
 
-void loop() {
+void loop()
+{
 #if defined(STATIC_ALLOC)
     cube.update();
 #elif defined(DYNAMIC_ALLOC)

@@ -29,12 +29,15 @@ Cubensis::Cubensis()
 
     // Set kill pin mode to input
     pinMode(KILL_PIN, INPUT);
+    pinMode(STATUS_LED_PIN, OUTPUT);
 
     // Verify that all subsystems are working.
     if (check_status() == Status::READY) {
+        digitalWrite(STATUS_LED_PIN, HIGH);
+
         // Initialize PID
         pid_stabx = new PID{&orientation.x,  &error_stabx, &setpoint_stabx, 1, 0, 0};
-        pid_ratex = new PID{&rotationRate.x, &error_ratex, &error_stabx, 0.375, 0, 0};
+        pid_ratex = new PID{&rotationRate.x, &error_ratex, &error_stabx, 0.175, 0, 0};
 
         #if CUBENSIS_DBG!=DBG_NONE
         CUBE_PRINTLN("Cubensis Started successfully\n");
@@ -141,29 +144,23 @@ void Cubensis::start()
  */
 void Cubensis::update()
 {
-    if (status == Status::RUNNING) {
-        if (USE_KILL_SWITCH && digitalRead(KILL_PIN) == KILL_SIGNAL)
-            return kill();
+    if (USE_KILL_SWITCH && digitalRead(KILL_PIN) == KILL_SIGNAL)
+        kill();
 
-        imu1->updateOrientation();
-        imu2->updateOrientation();
+    imu1->updateOrientation();
+    imu2->updateOrientation();
 
-        orientation  = (*imu1->complementary + *imu2->complementary) / 2;
-        rotationRate = (*imu1->rotation + *imu2->rotation) / 2;
-        pid_stabx->computeError();
-        pid_ratex->computeError();
+    orientation  = (*imu1->complementary + *imu2->complementary) / 2;
+    rotationRate = (*imu1->rotation + *imu2->rotation) / 2;
+    pid_stabx->computeError();
+    pid_ratex->computeError();
 
-        Motor::getThrottlePinValue();
+    Motor::read_throttle_pin();
 
-        motor1.set(0);
-        motor2.set(error_ratex);
-        motor3.set(0);
-        motor4.set(-error_ratex);
-    } else if (digitalRead(KILL_PIN) != KILL_SIGNAL) {
-        // TODO: unkill
-        //Motor::kill(false);
-        status = Status::RUNNING;
-    }
+    motor1.set();
+    motor2.set_error(error_ratex);
+    motor3.set();
+    motor4.set_error(-error_ratex);
 
     #if CUBENSIS_DBG!=DBG_NONE
     print();
@@ -179,11 +176,16 @@ void Cubensis::update()
  */
 void Cubensis::kill() {
     CUBE_PRINTLN("received kill signal.");
-    status = Status::KILL;
-    motor1.kill();
-    motor2.kill();
-    motor3.kill();
-    motor4.kill();
+
+    if (!Motor::killed) {
+        status = Status::KILL;
+        Motor::kill(true);
+        digitalWrite(STATUS_LED_PIN, LOW);
+    } else {
+        status = Status::RUNNING;
+        Motor::kill(false);
+        digitalWrite(STATUS_LED_PIN, HIGH);
+    }
 }
 
 
@@ -205,13 +207,13 @@ void Cubensis::print()
         CUBE_PRINT(",\"yaw\": ");
         CUBE_PRINT(error_stabx);
         CUBE_PRINT(",\"motor1\": ");
-        CUBE_PRINT(motor1.getThrottle());
+        CUBE_PRINT(motor1.throttle);
         CUBE_PRINT(",\"motor2\": ");
-        CUBE_PRINT(motor2.getThrottle());
+        CUBE_PRINT(motor2.throttle);
         CUBE_PRINT(",\"motor3\": ");
-        CUBE_PRINT(motor3.getThrottle());
+        CUBE_PRINT(motor3.throttle);
         CUBE_PRINT(",\"motor4\": ");
-        CUBE_PRINT(motor4.getThrottle());
+        CUBE_PRINT(motor4.throttle);
         CUBE_PRINTLN("}");
         #elif CUBENSIS_DBG==DBG_READABLE
         CUBE_PRINT("Rate error: ");
