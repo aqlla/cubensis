@@ -6,9 +6,7 @@
 #ifndef __IT_PID__
 #define __IT_PID__
 
-#include "Arduino.h"
-
-using it_float = double;
+#include "util.h"
 
 enum ControllerDirection { DIRECT, REVERSE };
 enum ControllerMode { AUTOMATIC, MANUAL };
@@ -16,27 +14,27 @@ enum ControllerMode { AUTOMATIC, MANUAL };
 class PID
 {
 public:
-    PID(it_float*, it_float*, it_float*, it_float, it_float, it_float);
+    PID(cfloat*, cfloat*, cfloat*, cfloat, cfloat, cfloat);
     bool computeError();
-    void setTuningCoefficients(it_float, it_float, it_float);
-    void setOutputLimits(it_float, it_float);
+    void setTuningCoefficients(cfloat, cfloat, cfloat);
+    void setOutputLimits(cfloat, cfloat);
     void setSamplePeriod(unsigned long);
     void setDirection(ControllerDirection);
     void setMode(ControllerMode);
 
 private:
-    it_float* input;
-    it_float* output;
-    it_float* setpoint;
+    cfloat* input;
+    cfloat* output;
+    cfloat* setpoint;
 
-    it_float k_proportional;	// Proportional tuning parameter.
-    it_float k_integral;		// Integral tuning parameter.
-    it_float k_derivative;	    // Derivative tuning parameter.
+    cfloat k_proportional;	// Proportional tuning parameter.
+    cfloat k_integral;		// Integral tuning parameter.
+    cfloat k_derivative;	// Derivative tuning parameter.
 
-    it_float integralError;
-    it_float previousInput;
-    it_float outputMin;
-    it_float outputMax;
+    cfloat integralError;
+    cfloat previousInput;
+    cfloat outputMin;
+    cfloat outputMax;
 
     unsigned long samplePeriod;
     unsigned long previousTime;
@@ -44,7 +42,7 @@ private:
     ControllerDirection direction;
     ControllerMode mode;
 
-    it_float getBoundedValue(it_float);
+    cfloat getBoundedValue(cfloat);
     void init();
 };
 

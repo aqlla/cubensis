@@ -1,7 +1,7 @@
 // Created by Aquilla Sherrock on 5/30/15.
 // Copyright (c) 2015 Insignificant Tech. All rights reserved.
 
-#include "PID.h"
+#include "pid.h"
 
 /**
  * PID Constructor.
@@ -16,7 +16,7 @@
  * @param ki: Integral tuning parameter.
  * @param kd: Derivative tuning parameter.
  */
-PID::PID(it_float* input, it_float* output, it_float* setpoint, it_float kp, it_float ki, it_float kd)
+PID::PID(cfloat* input, cfloat* output, cfloat* setpoint, cfloat kp, cfloat ki, cfloat kd)
     :input(input),
      output(output),
      setpoint(setpoint),
@@ -48,18 +48,18 @@ bool PID::computeError()
 
         if (dt >= samplePeriod) {
             // Calculate proportional error.
-            it_float input = *(this->input);
-            it_float proportionalError = *(this->setpoint) - input;
+            cfloat input = *(this->input);
+            cfloat proportionalError = *(this->setpoint) - input;
 
             // Calculate current integral error and add it to the accumulator.
             integralError += (k_integral * proportionalError) * dt;
 
             // Calculate derivative error
-            it_float derivativeError = input - previousInput;
+            cfloat derivativeError = input - previousInput;
 
             // Calculate adjusted values considering the coefficients.
-            it_float proportionalComponent = k_proportional * proportionalError;
-            it_float derivativeComponent   = k_derivative * derivativeError / dt;
+            cfloat proportionalComponent = k_proportional * proportionalError;
+            cfloat derivativeComponent   = k_derivative * derivativeError / dt;
 
             // Calculate new error output.
             *output = getBoundedValue(proportionalComponent + integralError - derivativeComponent);
@@ -82,7 +82,7 @@ bool PID::computeError()
  * @param ki: Integral tuning parameter.
  * @param kd: Derivative tuning parameter.
  */
-void PID::setTuningCoefficients(it_float kp, it_float ki, it_float kd)
+void PID::setTuningCoefficients(cfloat kp, cfloat ki, cfloat kd)
 {
     k_proportional = kp;
     k_integral     = ki;
@@ -103,7 +103,7 @@ void PID::setTuningCoefficients(it_float kp, it_float ki, it_float kd)
  * @param min: minimum output value.
  * @param max: maximum output value.
  */
-void PID::setOutputLimits(it_float min, it_float max)
+void PID::setOutputLimits(cfloat min, cfloat max)
 {
     if (min > max) return;
     outputMin = min;
@@ -162,7 +162,7 @@ void PID::setMode(ControllerMode mode)
   * @param error: the error value.
   * @return value inside output min/max.
   */
-it_float PID::getBoundedValue(it_float error)
+cfloat PID::getBoundedValue(cfloat error)
 {
     if (error > outputMax) {
         return outputMax;

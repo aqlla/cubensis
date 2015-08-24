@@ -5,21 +5,39 @@
  * ************************************************************************** *
  */
 
-#include <Arduino.h>
-#include "I2cdev.h"
-#include "Cubensis.h"
+#include "util.h"
+#include "cubensis.h"
 
+#define DYNAMIC_ALLOC
+//#define STATIC_ALLOC
+
+
+#if defined(STATIC_ALLOC)
+Cubensis cube;
+#elif defined(DYNAMIC_ALLOC)
 Cubensis* cube;
+#endif
+
 
 void setup() {
-    cube = new Cubensis();
-    cube->prepare();
-    cube->calibrateSensors(5000);
+#if defined(STATIC_ALLOC)
+    cube.prepare();
+    cube.calibrateSensors(1000);
+    cube.start();
+#elif defined(DYNAMIC_ALLOC)
+    cube = new Cubensis{};
+    cube->start_motors();
+    cube->calibrate_sensors(1000);
     cube->start();
+#endif
 }
 
 void loop() {
+#if defined(STATIC_ALLOC)
+    cube.update();
+#elif defined(DYNAMIC_ALLOC)
     cube->update();
+#endif
 }
 
 

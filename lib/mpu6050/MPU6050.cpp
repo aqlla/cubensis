@@ -53,7 +53,7 @@ MPU6050::MPU6050(uint8_t address) {
     devAddr = address;
 }
 
-/** Power on and prepare for general usage.
+/** Power on and start_motors for general usage.
  * This will activate the device and take it out of sleep mode (which must be done
  * after start-up). This function also sets both the accelerometer and the gyroscope
  * to their most sensitive settings, namely +/- 2g and +/- 250 degrees/sec, and sets
@@ -518,7 +518,7 @@ void MPU6050::setMotionDetectionDuration(uint8_t duration) {
  * interrupt both when Zero Motion is first detected and when Zero Motion is no
  * longer detected.
  *
- * When a zero motion event is detected, a Zero Motion CubensisStatus will be indicated
+ * When a zero motion event is detected, a Zero Motion Status will be indicated
  * in the MOT_DETECT_STATUS register (Register 97). When a motion-to-zero-motion
  * condition is detected, the status bit is set to 1. When a zero-motion-to-
  * motion condition is detected, the status bit is set to 0.

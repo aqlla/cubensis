@@ -5,17 +5,9 @@
 #ifndef CUBENSIS_IMU_H
 #define CUBENSIS_IMU_H
 
-#include "Arduino.h"
+#include "util.h"
 #include "MPU6050.h"
 #include "itvec.h"
-
-#define IMU_STATUS_SLEEP            0
-#define IMU_STATUS_OK               1
-#define IMU_STATUS_CONNECTION_ERROR 2
-#define IMU_STATUS_ADDRESS_ERROR    3
-
-#define IMU_ADDR_AD0_LOW  MPU6050_ADDRESS_AD0_LOW
-#define IMU_ADDR_AD0_HIGH MPU6050_ADDRESS_AD0_HIGH
 
 #define TIME_FUNC millis
 #define TIME_TO_SEC 1000.0
@@ -24,14 +16,26 @@
 class IMU
 {
 public:
-    ITVec3<it_float> *rotation;
-    ITVec3<it_float> *complementary;
+    enum class Status {
+        SLEEP, OK, CONNECTION_ERROR, ADDRESS_ERROR
+    };
 
-    IMU(short address);
+    enum class Address {
+        AD0_LO = MPU6050_ADDRESS_AD0_LOW,
+        AD0_HI = MPU6050_ADDRESS_AD0_HIGH
+    };
+
+    it::vec3<cfloat> *gyroOffset;
+    it::vec3<cfloat> *accelOffset;
+
+    it::vec3<cfloat> *rotation;
+    it::vec3<cfloat> *complementary;
+
+    IMU(Address address);
     ~IMU();
 
     void updateOrientation();
-    void calibrate(unsigned long timeToCalibrate);
+    void calibrate(unsigned long time);
     void setGyroscopeSensitivity(uint8_t sensitivity);
     void setAccelerometerSensitivity(uint8_t sensitivity);
     void startTime();
@@ -40,18 +44,14 @@ public:
 private:
     // The IMU device 
     MPU6050* device;
-    short status;
-    short address;
+    Status status;
+    Address address;
     unsigned long previousTime;
 
-    ITVec3<it_float> *gyroOffset;
-    ITVec3<it_float> *accelOffset;
-    ITVec3<it_float> *orientation;
-    AccelerationVec  *acceleration;
-
-
-    // Alpha value for complimentary filter
-    constexpr static it_float ALPHA = .965;
+//    it::vec3<cfloat> *gyroOffset;
+//    it::vec3<cfloat> *accelOffset;
+    it::vec3<cfloat> *orientation;
+    it::AccelerationVec  *acceleration;
 
     /**
     * Raw Gyroscope readings.
@@ -67,7 +67,7 @@ private:
     *    2      | +/- 1000 degrees/s | 32.8 LSB/deg/s
     *    3      | +/- 2000 degrees/s | 16.4 LSB/deg/s
     */
-    ITVec3<int16_t> *gyroData;
+    it::vec3<int16_t> *gyroData;
 
     /**
      * Raw acceleration readings.
@@ -82,18 +82,18 @@ private:
      *    2       | +/- 8g           | 4096  LSB/g
      *    3       | +/- 16g          | 2048  LSB/g
      */
-    ITVec3<int16_t> *accelData;
+    it::vec3<int16_t> *accelData;
 
 
     // Sensitivity Settings
     short    LSB_PER_G;           // units: LSB/g
-    it_float LSB_PER_DEG_PER_SEC; // units: LSB/Ã‚Â°/s
-    constexpr static short    ACC_SENSITIVITIES[4] = {16384, 8192, 4096, 2048};
-    constexpr static it_float GYR_SENSITIVITIES[4] = {131, 65.5, 32.8, 16.4};
-    constexpr static it_float ALPHA = .965; // Alpha value for complimentary filter
+    cfloat LSB_PER_DEG_PER_SEC; // units: LSB/Ã‚Â°/s
+    static constexpr short  ACC_SENSITIVITIES[4] = {16384, 8192, 4096, 2048};
+    static constexpr cfloat GYR_SENSITIVITIES[4] = {131, 65.5, 32.8, 16.4};
+    static constexpr cfloat ALPHA = .965; // Alpha value for complimentary filter
 
     void getAccelerationAndRotation();
-    void flipAngle(it_float *angle);
+    void flipAngle(cfloat*angle);
     short getUpOrDown();
 };
 

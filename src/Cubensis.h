@@ -1,7 +1,7 @@
 #ifndef __CUBENSIS_H__
 #define __CUBENSIS_H__
 
-#include "Arduino.h"
+#include "util.h"
 #include "pid.h"
 #include "imu.h"
 #include "motor.h"
@@ -31,52 +31,52 @@
 
 
 #define USE_KILL_SWITCH true
-#define KILL_SIGNAL LOW
+#define KILL_SIGNAL HIGH
 #define KILL_PIN 2
-
-enum class CubensisStatus
-{
-    KILL = -1,
-    SLEEP,
-    READY,
-    RUNNING,
-    ERROR
-};
 
 class Cubensis {
 public:
+    enum class Status
+    {
+        KILL = -1,
+        SLEEP,
+        READY,
+        RUNNING,
+        ERROR
+    };
+
     Cubensis();
 
-    void prepare();
-    void calibrateSensors(unsigned long calibrationTime);
+    void start_motors();
+    void calibrate_sensors(unsigned long);
     void start();
     void update();
     void kill();
     void print();
-    CubensisStatus check_status();
+    Status check_status();
 
 private:
     IMU* imu1;
     IMU* imu2;
 
-    ITVec3<it_float> orientation;
-    ITVec3<it_float> rotationRate;
+    it::vec3<cfloat> orientation;
+    it::vec3<cfloat> rotationRate;
 
     PID* pid_ratex;
     PID* pid_stabx;
-    it_float error_ratex;
-    it_float error_stabx;
-    it_float setpoint_ratex;
-    it_float setpoint_stabx;
 
+    cfloat error_ratex;
+    cfloat error_stabx;
+    cfloat setpoint_ratex;
+    cfloat setpoint_stabx;
+
+    int throttle;
     Motor motor1;
     Motor motor2;
     Motor motor3;
     Motor motor4;
 
-    int throttle;
-
-    CubensisStatus status;
+    Status status;
     unsigned long lastPrint;
     unsigned long now;
 };

@@ -5,11 +5,13 @@
 #include "motor.h"
 
 int Motor::throttlePinValue = 0;
+bool Motor::killed = false;
+
 
 Motor::Motor(uint8_t pin)
-    : is_kill(false),
-      servoPin(pin),
-      throttle(0)
+    : is_kill{false},
+      servoPin{pin},
+      throttle{0}
 {}
 
 void Motor::init() {
@@ -18,13 +20,14 @@ void Motor::init() {
 }
 
 int Motor::set() {
+    if (is_kill) return 0;
     throttle = (int) map(analogRead(THROTTLE_PIN), 0, 1023, THROTTLE_MIN, THROTTLE_MAX);
     servo.write(throttle);
     return throttle;
 }
 
 int Motor::set(int error) {
-    if (is_kill) return -1;
+    if (is_kill) return 0;
 
     throttle = throttlePinValue + error;
     if (throttle > THROTTLE_MAX) {
@@ -44,6 +47,7 @@ int Motor::getThrottle() {
 void Motor::kill(bool doKill) {
     throttle = THROTTLE_KILL;
     is_kill = doKill;
+    servo.write(throttle);
 }
 
 int Motor::getThrottlePinValue() {

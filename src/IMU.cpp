@@ -1,33 +1,33 @@
 // Created by Aquilla Sherrock on 5/30/15.
 // Copyright (c) 2015 Insignificant Tech. All rights reserved.
 
-#include "IMU.h"
+#include "imu.h"
 
-IMU::IMU(short address)
-        :address(address),
-         status(IMU_STATUS_SLEEP),
-         LSB_PER_DEG_PER_SEC(131),
-         LSB_PER_G(16384)
+IMU::IMU(Address address)
+        :address{address},
+         status{Status::SLEEP},
+         LSB_PER_DEG_PER_SEC{131},
+         LSB_PER_G{16384}
 
 {
-    device = new MPU6050();
-    gyroData  = new ITVec3<int16_t>();
-    accelData = new ITVec3<int16_t>();
-    rotation = new ITVec3<it_float>();
-    gyroOffset  = new ITVec3<it_float>();
-    accelOffset = new ITVec3<it_float>();
-    acceleration = new AccelerationVec();
-    orientation  = new ITVec3<it_float>();
-    complementary = new ITVec3<it_float>();
+    device = new MPU6050{};
+    gyroData  = new it::vec3<int16_t>{};
+    accelData = new it::vec3<int16_t>{};
+    rotation  = new it::vec3<cfloat>{};
+    gyroOffset    = new it::vec3<cfloat>{};
+    accelOffset   = new it::vec3<cfloat>{};
+    acceleration  = new it::AccelerationVec{};
+    orientation   = new it::vec3<cfloat>{};
+    complementary = new it::vec3<cfloat>{};
 
-    if (address != IMU_ADDR_AD0_LOW && address != IMU_ADDR_AD0_HIGH) {
-        status = IMU_STATUS_ADDRESS_ERROR;
+    if (address != Address::AD0_LO && address != Address::AD0_HI) {
+        status = Status::ADDRESS_ERROR;
     } else {
         device->initialize();
         if (device->testConnection()) {
-            status = IMU_STATUS_OK;
+            status = Status::OK;
         } else {
-            status = IMU_STATUS_CONNECTION_ERROR;
+            status = Status::CONNECTION_ERROR;
         }
     }
 };
@@ -78,7 +78,7 @@ void IMU::setAccelerometerSensitivity(uint8_t sensitivity)
 
 
 bool IMU::ok() {
-    return status == IMU_STATUS_OK;
+    return status == Status::OK;
 }
 
 
@@ -119,20 +119,20 @@ void IMU::updateOrientation()
  *
  * @param iterations: number of times to scan IMU readings.
  */
-void IMU::calibrate(unsigned long timeToCalibrate)
+void IMU::calibrate(unsigned long time)
 {
     unsigned long startTime = TIME_FUNC();
     int iterations = 0;
 
-    while (TIME_FUNC() - startTime < timeToCalibrate) {
+    while (TIME_FUNC() - startTime < time) {
         device->getMotion6(&accelData->x, &accelData->y, &accelData->z, &gyroData->x, &gyroData->y, &gyroData->z);
         *accelOffset += *accelData / LSB_PER_G;             // convert to G's
         *gyroOffset += *gyroData / LSB_PER_DEG_PER_SEC;     // convert to deg/sec
         iterations++;
     }
 
-    *accelOffset /= (it_float) iterations;
-    *gyroOffset  /= (it_float) iterations;
+    *accelOffset /= (cfloat) iterations;
+    *gyroOffset  /= (cfloat) iterations;
     accelOffset->z -= 1;    // Account for gravity
 }
 
@@ -156,7 +156,7 @@ void IMU::startTime() {
 void IMU::getAccelerationAndRotation()
 {
     unsigned long currentTime = TIME_FUNC();
-    it_float dt = (currentTime - previousTime) / TIME_TO_SEC;
+    cfloat dt = (currentTime - previousTime) / TIME_TO_SEC;
     previousTime = currentTime;
 
     device->getMotion6(&accelData->x, &accelData->y, &accelData->z, &gyroData->x, &gyroData->y, &gyroData->z);
@@ -166,7 +166,7 @@ void IMU::getAccelerationAndRotation()
 
 
 
-void IMU::flipAngle(it_float *angle)
+void IMU::flipAngle(cfloat*angle)
 {
     if (*angle > 180) {
         *angle = -180 - (*angle - 180);

@@ -98,7 +98,7 @@ I2Cdev::I2Cdev() {
  * @param bitNum Bit position to read (0-7)
  * @param data Container for single bit value
  * @param timeout Optional read timeout in milliseconds (0 to disable, leave off to use default class value in I2Cdev::readTimeout)
- * @return CubensisStatus of read operation (true = success)
+ * @return Status of read operation (true = success)
  */
 int8_t I2Cdev::readBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t *data, uint16_t timeout) {
     uint8_t b;
@@ -113,7 +113,7 @@ int8_t I2Cdev::readBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t
  * @param bitNum Bit position to read (0-15)
  * @param data Container for single bit value
  * @param timeout Optional read timeout in milliseconds (0 to disable, leave off to use default class value in I2Cdev::readTimeout)
- * @return CubensisStatus of read operation (true = success)
+ * @return Status of read operation (true = success)
  */
 int8_t I2Cdev::readBitW(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_t *data, uint16_t timeout) {
     uint16_t b;
@@ -129,7 +129,7 @@ int8_t I2Cdev::readBitW(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16
  * @param length Number of bits to read (not more than 8)
  * @param data Container for right-aligned value (i.e. '101' read from any bitStart position will equal 0x05)
  * @param timeout Optional read timeout in milliseconds (0 to disable, leave off to use default class value in I2Cdev::readTimeout)
- * @return CubensisStatus of read operation (true = success)
+ * @return Status of read operation (true = success)
  */
 int8_t I2Cdev::readBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t *data, uint16_t timeout) {
     // 01101001 read byte
@@ -154,7 +154,7 @@ int8_t I2Cdev::readBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint
  * @param length Number of bits to read (not more than 16)
  * @param data Container for right-aligned value (i.e. '101' read from any bitStart position will equal 0x05)
  * @param timeout Optional read timeout in milliseconds (0 to disable, leave off to use default class value in I2Cdev::readTimeout)
- * @return CubensisStatus of read operation (1 = success, 0 = failure, -1 = timeout)
+ * @return Status of read operation (1 = success, 0 = failure, -1 = timeout)
  */
 int8_t I2Cdev::readBitsW(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint16_t *data, uint16_t timeout) {
     // 1101011001101001 read byte
@@ -178,7 +178,7 @@ int8_t I2Cdev::readBitsW(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uin
  * @param regAddr Register regAddr to read from
  * @param data Container for byte value read from device
  * @param timeout Optional read timeout in milliseconds (0 to disable, leave off to use default class value in I2Cdev::readTimeout)
- * @return CubensisStatus of read operation (true = success)
+ * @return Status of read operation (true = success)
  */
 int8_t I2Cdev::readByte(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint16_t timeout) {
     return readBytes(devAddr, regAddr, 1, data, timeout);
@@ -189,7 +189,7 @@ int8_t I2Cdev::readByte(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint16_
  * @param regAddr Register regAddr to read from
  * @param data Container for word value read from device
  * @param timeout Optional read timeout in milliseconds (0 to disable, leave off to use default class value in I2Cdev::readTimeout)
- * @return CubensisStatus of read operation (true = success)
+ * @return Status of read operation (true = success)
  */
 int8_t I2Cdev::readWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data, uint16_t timeout) {
     return readWords(devAddr, regAddr, 1, data, timeout);
@@ -472,7 +472,7 @@ int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint1
  * @param regAddr Register regAddr to write to
  * @param bitNum Bit position to write (0-7)
  * @param value New bit value to write
- * @return CubensisStatus of operation (true = success)
+ * @return Status of operation (true = success)
  */
 bool I2Cdev::writeBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t data) {
     uint8_t b;
@@ -486,7 +486,7 @@ bool I2Cdev::writeBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t 
  * @param regAddr Register regAddr to write to
  * @param bitNum Bit position to write (0-15)
  * @param value New bit value to write
- * @return CubensisStatus of operation (true = success)
+ * @return Status of operation (true = success)
  */
 bool I2Cdev::writeBitW(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_t data) {
     uint16_t w;
@@ -501,7 +501,7 @@ bool I2Cdev::writeBitW(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_
  * @param bitStart First bit position to write (0-7)
  * @param length Number of bits to write (not more than 8)
  * @param data Right-aligned value to write
- * @return CubensisStatus of operation (true = success)
+ * @return Status of operation (true = success)
  */
 bool I2Cdev::writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t data) {
     //      010 value to write
@@ -530,7 +530,7 @@ bool I2Cdev::writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8
  * @param bitStart First bit position to write (0-15)
  * @param length Number of bits to write (not more than 16)
  * @param data Right-aligned value to write
- * @return CubensisStatus of operation (true = success)
+ * @return Status of operation (true = success)
  */
 bool I2Cdev::writeBitsW(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint16_t data) {
     //              010 value to write
@@ -557,7 +557,7 @@ bool I2Cdev::writeBitsW(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint
  * @param devAddr I2C slave device address
  * @param regAddr Register address to write to
  * @param data New byte value to write
- * @return CubensisStatus of operation (true = success)
+ * @return Status of operation (true = success)
  */
 bool I2Cdev::writeByte(uint8_t devAddr, uint8_t regAddr, uint8_t data) {
     return writeBytes(devAddr, regAddr, 1, &data);
@@ -567,7 +567,7 @@ bool I2Cdev::writeByte(uint8_t devAddr, uint8_t regAddr, uint8_t data) {
  * @param devAddr I2C slave device address
  * @param regAddr Register address to write to
  * @param data New word value to write
- * @return CubensisStatus of operation (true = success)
+ * @return Status of operation (true = success)
  */
 bool I2Cdev::writeWord(uint8_t devAddr, uint8_t regAddr, uint16_t data) {
     return writeWords(devAddr, regAddr, 1, &data);
@@ -578,7 +578,7 @@ bool I2Cdev::writeWord(uint8_t devAddr, uint8_t regAddr, uint16_t data) {
  * @param regAddr First register address to write to
  * @param length Number of bytes to write
  * @param data Buffer to copy new data from
- * @return CubensisStatus of operation (true = success)
+ * @return Status of operation (true = success)
  */
 bool I2Cdev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t* data) {
     #ifdef I2CDEV_SERIAL_DEBUG
@@ -633,7 +633,7 @@ bool I2Cdev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_
  * @param regAddr First register address to write to
  * @param length Number of words to write
  * @param data Buffer to copy new data from
- * @return CubensisStatus of operation (true = success)
+ * @return Status of operation (true = success)
  */
 bool I2Cdev::writeWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t* data) {
     #ifdef I2CDEV_SERIAL_DEBUG
@@ -965,7 +965,7 @@ uint16_t I2Cdev::readTimeout = I2CDEV_DEFAULT_READ_TIMEOUT;
         sbi(PORTC, 5);
 
         // initialize twi prescaler and bit rate
-        cbi(TWSR, TWPS0); // TWI CubensisStatus Register - Prescaler bits
+        cbi(TWSR, TWPS0); // TWI Status Register - Prescaler bits
         cbi(TWSR, TWPS1);
 
         /* twi bit rate formula from atmega128 manual pg 204
