@@ -3,6 +3,9 @@
 
 #include "imu.h"
 
+uint16_t IMU::ACC_SENSITIVITIES[4] = {16384, 8192, 4096, 2048};
+cfloat   IMU::GYR_SENSITIVITIES[4] = {131, 65.5, 32.8, 16.4};
+
 IMU::IMU(Address address)
         :address{address},
          status{Status::SLEEP},
@@ -20,7 +23,7 @@ IMU::IMU(Address address)
     orientation   = new it::vec3<cfloat>{};
     complementary = new it::vec3<cfloat>{};
 
-    if (address != Address::AD0_LO && address != Address::AD0_HI) {
+    if (address != Address::LO && address != Address::HI) {
         status = Status::ADDRESS_ERROR;
     } else {
         device->initialize();
@@ -52,12 +55,12 @@ IMU::~IMU()
  */
 void IMU::setGyroscopeSensitivity(uint8_t sensitivity)
 {
-    if (sensitivity < 0 || sensitivity >= 4) {
+    if (sensitivity < 0 || sensitivity > 3) {
         sensitivity = 0;
     }
 
     device->setFullScaleGyroRange(sensitivity);
-    LSB_PER_DEG_PER_SEC = IMU::GYR_SENSITIVITIES[sensitivity];
+    LSB_PER_DEG_PER_SEC = GYR_SENSITIVITIES[sensitivity];
 }
 
 
@@ -67,12 +70,12 @@ void IMU::setGyroscopeSensitivity(uint8_t sensitivity)
  */
 void IMU::setAccelerometerSensitivity(uint8_t sensitivity)
 {
-    if (sensitivity < 0 || sensitivity >= 4) {
+    if (sensitivity < 0 || sensitivity > 3) {
         sensitivity = 0;
     }
 
     device->setFullScaleAccelRange(sensitivity);
-    LSB_PER_G = IMU::ACC_SENSITIVITIES[sensitivity];
+    LSB_PER_G = ACC_SENSITIVITIES[sensitivity];
 }
 
 

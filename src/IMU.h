@@ -21,8 +21,8 @@ public:
     };
 
     enum class Address {
-        AD0_LO = MPU6050_ADDRESS_AD0_LOW,
-        AD0_HI = MPU6050_ADDRESS_AD0_HIGH
+        LO = MPU6050_ADDRESS_AD0_LOW,
+        HI = MPU6050_ADDRESS_AD0_HIGH
     };
 
     it::vec3<cfloat> *gyroOffset;
@@ -35,9 +35,9 @@ public:
     ~IMU();
 
     void updateOrientation();
-    void calibrate(unsigned long time);
-    void setGyroscopeSensitivity(uint8_t sensitivity);
-    void setAccelerometerSensitivity(uint8_t sensitivity);
+    void calibrate(unsigned long);
+    void setGyroscopeSensitivity(uint8_t);
+    void setAccelerometerSensitivity(uint8_t);
     void startTime();
     bool ok();
 
@@ -48,8 +48,6 @@ private:
     Address address;
     unsigned long previousTime;
 
-//    it::vec3<cfloat> *gyroOffset;
-//    it::vec3<cfloat> *accelOffset;
     it::vec3<cfloat> *orientation;
     it::AccelerationVec  *acceleration;
 
@@ -86,11 +84,11 @@ private:
 
 
     // Sensitivity Settings
-    short    LSB_PER_G;           // units: LSB/g
+    uint16_t LSB_PER_G;         // units: LSB/g
     cfloat LSB_PER_DEG_PER_SEC; // units: LSB/Ã‚Â°/s
-    static constexpr short  ACC_SENSITIVITIES[4] = {16384, 8192, 4096, 2048};
-    static constexpr cfloat GYR_SENSITIVITIES[4] = {131, 65.5, 32.8, 16.4};
-    static constexpr cfloat ALPHA = .965; // Alpha value for complimentary filter
+    static uint16_t ACC_SENSITIVITIES[4];
+    static cfloat   GYR_SENSITIVITIES[4];
+    constexpr static cfloat ALPHA = .9995; // Alpha value for complimentary filter
 
     void getAccelerationAndRotation();
     void flipAngle(cfloat*angle);

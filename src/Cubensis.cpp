@@ -8,13 +8,10 @@ Cubensis::Cubensis()
         : status{Status::SLEEP},
           lastPrint{0},
           now{millis()},
-          motor1{MOTOR1_PIN},
-          motor2{MOTOR2_PIN},
-          motor3{MOTOR3_PIN},
-          motor4{MOTOR4_PIN},
-          error_ratex{0},
-          error_stabx{0},
-          setpoint_stabx{0}
+          motors{{MOTOR1_PIN},
+                 {MOTOR2_PIN},
+                 {MOTOR3_PIN},
+                 {MOTOR4_PIN}}
 {
     Wire.begin();   // use i2cdev fastwire implementation
     TWBR = 24;      // 400kHz I2C clock (200kHz if CPU is 8MHz)
@@ -24,20 +21,29 @@ Cubensis::Cubensis()
     CUBE_PRINTLN("Starting Cubensis");
     #endif
 
-    imu1 = new IMU{IMU::Address::AD0_LO};
-    imu2 = new IMU{IMU::Address::AD0_HI};
+    imu1 = new IMU{IMU::Address::LO};
+    imu2 = new IMU{IMU::Address::HI};
 
     // Set kill pin mode to input
     pinMode(KILL_PIN, INPUT);
-    pinMode(STATUS_LED_PIN, OUTPUT);
+    pinMode(STATUS1_LED_PIN, OUTPUT);
+    pinMode(STATUS2_LED_PIN, OUTPUT);
 
     // Verify that all subsystems are working.
-    if (check_status() == Status::READY) {
-        digitalWrite(STATUS_LED_PIN, HIGH);
+    check_status();
+
+    if (status == Status::READY) {
+        imu1->setAccelerometerSensitivity(3);
+        imu2->setAccelerometerSensitivity(3);
+        imu1->setGyroscopeSensitivity(3);
+        imu2->setGyroscopeSensitivity(3);
+
+        digitalWrite(STATUS1_LED_PIN, HIGH);
+        digitalWrite(STATUS2_LED_PIN, LOW);
 
         // Initialize PID
-        pid_stabx = new PID{&orientation.x,  &error_stabx, &setpoint_stabx, 1, 0, 0};
-        pid_ratex = new PID{&rotationRate.x, &error_ratex, &error_stabx, 0.175, 0, 0};
+        pid_stab.x = new PID{&orientation.x,  &error_stab.x, &setpoint_stab.x, 3, .000025, 0};
+        pid_rate.x = new PID{&rotationRate.x, &error_rate.x, &error_stab.x, .5, .000025, .0075};
 
         #if CUBENSIS_DBG!=DBG_NONE
         CUBE_PRINTLN("Cubensis Started successfully\n");
@@ -76,10 +82,9 @@ void Cubensis::start_motors()
     CUBE_PRINTLN("Initializing Motors.");
 #endif
 
-    motor1.init();
-    motor2.init();
-    motor3.init();
-    motor4.init();
+    for (int8_t i = 0; i < MOTOR_COUNT; ++i) {
+        motors[i].init();
+    }
 
     status = Status::RUNNING;
 
@@ -106,6 +111,8 @@ void Cubensis::calibrate_sensors(unsigned long time)
 
     imu1->calibrate(time);
     imu2->calibrate(time);
+
+    digitalWrite(STATUS2_LED_PIN, HIGH);
 
     #if CUBENSIS_DBG==DBG_READABLE
     CUBE_PRINTLN("Calibration Finished.");
@@ -152,15 +159,15 @@ void Cubensis::update()
 
     orientation  = (*imu1->complementary + *imu2->complementary) / 2;
     rotationRate = (*imu1->rotation + *imu2->rotation) / 2;
-    pid_stabx->computeError();
-    pid_ratex->computeError();
+    pid_stab.x->computeError();
+    pid_rate.x->computeError();
 
     Motor::read_throttle_pin();
 
-    motor1.set();
-    motor2.set_error(error_ratex);
-    motor3.set();
-    motor4.set_error(-error_ratex);
+    motors[0].set();
+    motors[1].set_error(error_rate.x);
+    motors[2].set();
+    motors[3].set_error(-error_rate.x);
 
     #if CUBENSIS_DBG!=DBG_NONE
     print();
@@ -180,11 +187,11 @@ void Cubensis::kill() {
     if (!Motor::killed) {
         status = Status::KILL;
         Motor::kill(true);
-        digitalWrite(STATUS_LED_PIN, LOW);
+        digitalWrite(STATUS2_LED_PIN, LOW);
     } else {
         status = Status::RUNNING;
         Motor::kill(false);
-        digitalWrite(STATUS_LED_PIN, HIGH);
+        digitalWrite(STATUS2_LED_PIN, HIGH);
     }
 }
 
@@ -200,20 +207,20 @@ void Cubensis::print()
         lastPrint = now;
 
         #if CUBENSIS_DBG==DBG_ARSILISCOPE
-        CUBE_PRINT("{\"roll\": ");
-        CUBE_PRINT(orientation.x);
-        CUBE_PRINT(",\"pitch\": ");
-        CUBE_PRINT(error_ratex);
+//        CUBE_PRINT("{\"roll\": ");
+//        CUBE_PRINT(orientation.x);
+        CUBE_PRINT("{\"pitch\": ");
+        CUBE_PRINT(error_rate.x);
         CUBE_PRINT(",\"yaw\": ");
-        CUBE_PRINT(error_stabx);
+        CUBE_PRINT(error_stab.x);
         CUBE_PRINT(",\"motor1\": ");
-        CUBE_PRINT(motor1.throttle);
+        CUBE_PRINT(motors[0].throttle);
         CUBE_PRINT(",\"motor2\": ");
-        CUBE_PRINT(motor2.throttle);
+        CUBE_PRINT(motors[1].throttle);
         CUBE_PRINT(",\"motor3\": ");
-        CUBE_PRINT(motor3.throttle);
+        CUBE_PRINT(motors[2].throttle);
         CUBE_PRINT(",\"motor4\": ");
-        CUBE_PRINT(motor4.throttle);
+        CUBE_PRINT(motors[3].throttle);
         CUBE_PRINTLN("}");
         #elif CUBENSIS_DBG==DBG_READABLE
         CUBE_PRINT("Rate error: ");

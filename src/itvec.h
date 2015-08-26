@@ -30,7 +30,7 @@ namespace it
         vec3(vec3<T>& vec3)
                 : arr{vec3.x, vec3.y, vec3.z} {};
 
-        vec3(T x = 0, T y = 0, T z = 0)
+        vec3(T x=0, T y=0, T z=0)
                 : arr{x, y, z} {};
 
         vec3(T* arr)

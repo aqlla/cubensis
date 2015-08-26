@@ -29,11 +29,14 @@
     #endif
 #endif
 
+#define MOTOR_COUNT 4
+
 
 #define USE_KILL_SWITCH true
 #define KILL_SIGNAL HIGH
 #define KILL_PIN 2
-#define STATUS_LED_PIN 13
+#define STATUS1_LED_PIN 13
+#define STATUS2_LED_PIN 12
 
 class Cubensis {
 public:
@@ -58,21 +61,18 @@ private:
     IMU* imu1;
     IMU* imu2;
 
-    it::vec3<cfloat> orientation;
-    it::vec3<cfloat> rotationRate;
+    it::vec3<cfloat> orientation{};
+    it::vec3<cfloat> rotationRate{};
 
-    PID* pid_ratex;
-    PID* pid_stabx;
+    it::vec3<PID*> pid_rate;
+    it::vec3<PID*> pid_stab;
 
-    cfloat error_ratex;
-    cfloat error_stabx;
-    cfloat setpoint_ratex;
-    cfloat setpoint_stabx;
+    it::vec3<cfloat> error_rate{};
+    it::vec3<cfloat> error_stab{};
+    it::vec3<cfloat> setpoint_rate{};
+    it::vec3<cfloat> setpoint_stab{};
 
-    Motor motor1;
-    Motor motor2;
-    Motor motor3;
-    Motor motor4;
+    Motor motors[MOTOR_COUNT];
 
     Status status;
     unsigned long lastPrint;

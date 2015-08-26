@@ -28,7 +28,7 @@ void setup()
 #elif defined(DYNAMIC_ALLOC)
     cube = new Cubensis{};
     cube->start_motors();
-    cube->calibrate_sensors(1000);
+    cube->calibrate_sensors(5000);
     cube->start();
 #endif
 }

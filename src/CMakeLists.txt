@@ -14,4 +14,4 @@ link_libraries(MPU6050)
 link_libraries(I2CDEV)
 link_libraries(SERVO)
 
-add_executable(cubensis main.cpp pid.h itvec.h imu.h cubensis.h motor.h cubensis.cpp motor.cpp imu.cpp pid.cpp bs2.h util.h)
+add_executable(cubensis main.cpp pid.h itvec.h imu.h cubensis.h motor.h cubensis.cpp motor.cpp imu.cpp pid.cpp util.h)
