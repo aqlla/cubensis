@@ -14,14 +14,6 @@ IMU::IMU(Address address)
 
 {
     device = new MPU6050{};
-    gyroData  = new it::vec3<int16_t>{};
-    accelData = new it::vec3<int16_t>{};
-    rotation  = new it::vec3<cfloat>{};
-    gyroOffset    = new it::vec3<cfloat>{};
-    accelOffset   = new it::vec3<cfloat>{};
-    acceleration  = new it::AccelerationVec{};
-    orientation   = new it::vec3<cfloat>{};
-    complementary = new it::vec3<cfloat>{};
 
     if (address != Address::LO && address != Address::HI) {
         status = Status::ADDRESS_ERROR;
@@ -36,48 +28,31 @@ IMU::IMU(Address address)
 };
 
 
-IMU::~IMU()
-{
+IMU::~IMU() {
     delete device;
-    delete rotation;
-    delete gyroData;
-    delete accelData;
-    delete gyroOffset;
-    delete accelOffset;
-    delete orientation;
-    delete acceleration;
-    delete complementary;
 };
 
 
 /**
  * Set gyroscope sensitivity.
  */
-void IMU::setGyroscopeSensitivity(uint8_t sensitivity)
-{
-    if (sensitivity < 0 || sensitivity > 3) {
+void IMU::setGyroscopeSensitivity(uint8_t sensitivity) {
+    if (sensitivity < 0 || sensitivity > 3)
         sensitivity = 0;
-    }
-
     device->setFullScaleGyroRange(sensitivity);
     LSB_PER_DEG_PER_SEC = GYR_SENSITIVITIES[sensitivity];
 }
 
 
-
 /**
  * Set accelerometer sensitivity.
  */
-void IMU::setAccelerometerSensitivity(uint8_t sensitivity)
-{
-    if (sensitivity < 0 || sensitivity > 3) {
+void IMU::setAccelerometerSensitivity(uint8_t sensitivity) {
+    if (sensitivity < 0 || sensitivity > 3)
         sensitivity = 0;
-    }
-
     device->setFullScaleAccelRange(sensitivity);
     LSB_PER_G = ACC_SENSITIVITIES[sensitivity];
 }
-
 
 
 bool IMU::ok() {
@@ -98,17 +73,17 @@ void IMU::updateOrientation()
     getAccelerationAndRotation();
 
     short zDirection = getUpOrDown();
-    orientation->x += rotation->x * zDirection;
-    orientation->y += rotation->y * zDirection;
-    orientation->z += rotation->z;
+    orientation.x += rotation.x * zDirection;
+    orientation.y += rotation.y * zDirection;
+    orientation.z += rotation.z;
 
-    flipAngle(&orientation->x);
-    flipAngle(&orientation->y);
-    flipAngle(&orientation->z);
+    flipAngle(&orientation.x);
+    flipAngle(&orientation.y);
+    flipAngle(&orientation.z);
 
-    complementary->x = ALPHA * orientation->x + (1 - ALPHA) * acceleration->roll();
-    complementary->y = ALPHA * orientation->y + (1 - ALPHA) * acceleration->pitch();
-    complementary->z = orientation->z;
+    complementary.x = ALPHA * orientation.x + (1 - ALPHA) * acceleration.roll();
+    complementary.y = ALPHA * orientation.y + (1 - ALPHA) * acceleration.pitch();
+    complementary.z = orientation.z;
 }
 
 
@@ -128,15 +103,15 @@ void IMU::calibrate(unsigned long time)
     int iterations = 0;
 
     while (TIME_FUNC() - startTime < time) {
-        device->getMotion6(&accelData->x, &accelData->y, &accelData->z, &gyroData->x, &gyroData->y, &gyroData->z);
-        *accelOffset += *accelData / LSB_PER_G;             // convert to G's
-        *gyroOffset += *gyroData / LSB_PER_DEG_PER_SEC;     // convert to deg/sec
+        device->getMotion6(&accelData.x, &accelData.y, &accelData.z, &gyroData.x, &gyroData.y, &gyroData.z);
+        accelOffset += accelData / LSB_PER_G;             // convert to G's
+        gyroOffset +=  gyroData / LSB_PER_DEG_PER_SEC;     // convert to deg/sec
         iterations++;
     }
 
-    *accelOffset /= (cfloat) iterations;
-    *gyroOffset  /= (cfloat) iterations;
-    accelOffset->z -= 1;    // Account for gravity
+    accelOffset /= (cfloat) iterations;
+    gyroOffset  /= (cfloat) iterations;
+    accelOffset.z -= 1;    // Account for gravity
 }
 
 
@@ -162,14 +137,14 @@ void IMU::getAccelerationAndRotation()
     cfloat dt = (currentTime - previousTime) / TIME_TO_SEC;
     previousTime = currentTime;
 
-    device->getMotion6(&accelData->x, &accelData->y, &accelData->z, &gyroData->x, &gyroData->y, &gyroData->z);
-    *rotation = 0.0 - (*gyroData / LSB_PER_DEG_PER_SEC - *gyroOffset) * dt;
-    *acceleration = *accelData / LSB_PER_G - *accelOffset * 9.81;
+    device->getMotion6(&accelData.x, &accelData.y, &accelData.z, &gyroData.x, &gyroData.y, &gyroData.z);
+    rotation = 0.0 - (gyroData / LSB_PER_DEG_PER_SEC - gyroOffset) * dt;
+    acceleration = accelData / LSB_PER_G - accelOffset * 9.81;
 }
 
 
 
-void IMU::flipAngle(cfloat*angle)
+void IMU::flipAngle(cfloat *angle)
 {
     if (*angle > 180) {
         *angle = -180 - (*angle - 180);
@@ -182,7 +157,7 @@ void IMU::flipAngle(cfloat*angle)
 
 short IMU::getUpOrDown()
 {
-    return acceleration->z > 0
+    return acceleration.z > 0
            ? (short) 1
            : (short) -1;
 }

@@ -62,5 +62,5 @@ uint8_t Motor::read_throttle_pin() {
 }
 
 uint8_t Motor::get_mapped_throttle_value() {
-    return (uint8_t) map(analogRead(THROTTLE_PIN), 0, 1023, THROTTLE_MIN, THROTTLE_MAX);
+    return (uint8_t) map(THROTTLE_READ(THROTTLE_PIN), THROTTLE_SIGNAL_MIN, THROTTLE_SIGNAL_MAX, THROTTLE_MIN, THROTTLE_MAX);
 }

@@ -25,11 +25,10 @@ public:
         HI = MPU6050_ADDRESS_AD0_HIGH
     };
 
-    it::vec3<cfloat> *gyroOffset;
-    it::vec3<cfloat> *accelOffset;
-
-    it::vec3<cfloat> *rotation;
-    it::vec3<cfloat> *complementary;
+    it::vec3<cfloat> gyroOffset;
+    it::vec3<cfloat> accelOffset;
+    it::vec3<cfloat> rotation;
+    it::vec3<cfloat> complementary;
 
     IMU(Address address);
     ~IMU();
@@ -42,14 +41,14 @@ public:
     bool ok();
 
 private:
-    // The IMU device 
+    // The IMU device
     MPU6050* device;
     Status status;
     Address address;
     unsigned long previousTime;
 
-    it::vec3<cfloat> *orientation;
-    it::AccelerationVec  *acceleration;
+    it::vec3<cfloat> orientation;
+    it::AccelerationVec acceleration;
 
     /**
     * Raw Gyroscope readings.
@@ -65,7 +64,7 @@ private:
     *    2      | +/- 1000 degrees/s | 32.8 LSB/deg/s
     *    3      | +/- 2000 degrees/s | 16.4 LSB/deg/s
     */
-    it::vec3<int16_t> *gyroData;
+    it::vec3<int16_t> gyroData;
 
     /**
      * Raw acceleration readings.
@@ -80,7 +79,7 @@ private:
      *    2       | +/- 8g           | 4096  LSB/g
      *    3       | +/- 16g          | 2048  LSB/g
      */
-    it::vec3<int16_t> *accelData;
+    it::vec3<int16_t> accelData;
 
 
     // Sensitivity Settings

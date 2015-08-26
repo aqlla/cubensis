@@ -15,7 +15,18 @@
 #define MOTOR3_PIN 6
 #define MOTOR4_PIN 9
 
-#define THROTTLE_PIN A3
+#if defined(THROTTLE_POT)
+    #define THROTTLE_PIN A3
+    #define THROTTLE_SIGNAL_MIN 0
+    #define THROTTLE_SIGNAL_MAX 1023
+    #define THROTTLE_READ(x) analogRead(x)
+#else
+    #define THROTTLE_PIN CH3
+    #define THROTTLE_SIGNAL_MIN CH3_PULSEIN_MIN
+    #define THROTTLE_SIGNAL_MAX CH3_PULSEIN_MAX
+    #define THROTTLE_READ(x) pulseIn(x, HIGH, 25000)
+#endif
+
 #define THROTTLE_MIN 10
 #define THROTTLE_MAX 125
 #define THROTTLE_KILL 10

@@ -25,6 +25,8 @@ Cubensis::Cubensis()
     imu2 = new IMU{IMU::Address::HI};
 
     // Set kill pin mode to input
+    pinMode(CH3, INPUT);
+
     pinMode(KILL_PIN, INPUT);
     pinMode(STATUS1_LED_PIN, OUTPUT);
     pinMode(STATUS2_LED_PIN, OUTPUT);
@@ -42,7 +44,7 @@ Cubensis::Cubensis()
         digitalWrite(STATUS2_LED_PIN, LOW);
 
         // Initialize PID
-        pid_stab.x = new PID{&orientation.x,  &error_stab.x, &setpoint_stab.x, 3, .000025, 0};
+        pid_stab.x = new PID{&orientation.x,  &error_stab.x, &setpoint_stab.x, 3, 0, .2};
         pid_rate.x = new PID{&rotationRate.x, &error_rate.x, &error_stab.x, .5, .000025, .0075};
 
         #if CUBENSIS_DBG!=DBG_NONE
@@ -82,9 +84,8 @@ void Cubensis::start_motors()
     CUBE_PRINTLN("Initializing Motors.");
 #endif
 
-    for (int8_t i = 0; i < MOTOR_COUNT; ++i) {
+    for (int8_t i = 0; i < MOTOR_COUNT; ++i)
         motors[i].init();
-    }
 
     status = Status::RUNNING;
 
@@ -117,10 +118,10 @@ void Cubensis::calibrate_sensors(unsigned long time)
     #if CUBENSIS_DBG==DBG_READABLE
     CUBE_PRINTLN("Calibration Finished.");
     CUBE_PRINTLN("Offsets:");
-    imu1->accelOffset->print();
-    imu2->accelOffset->print();
-    imu1->gyroOffset->print();
-    imu2->gyroOffset->print();
+    imu1->accelOffset.print();
+    imu2->accelOffset.print();
+    imu1->gyroOffset.print();
+    imu2->gyroOffset.print();
     #endif
 }
 
@@ -157,8 +158,8 @@ void Cubensis::update()
     imu1->updateOrientation();
     imu2->updateOrientation();
 
-    orientation  = (*imu1->complementary + *imu2->complementary) / 2;
-    rotationRate = (*imu1->rotation + *imu2->rotation) / 2;
+    orientation  = (imu1->complementary + imu2->complementary) / 2;
+    rotationRate = (imu1->rotation + imu2->rotation) / 2;
     pid_stab.x->computeError();
     pid_rate.x->computeError();
 
@@ -207,9 +208,9 @@ void Cubensis::print()
         lastPrint = now;
 
         #if CUBENSIS_DBG==DBG_ARSILISCOPE
-//        CUBE_PRINT("{\"roll\": ");
-//        CUBE_PRINT(orientation.x);
-        CUBE_PRINT("{\"pitch\": ");
+        CUBE_PRINT("{\"roll\": ");
+        CUBE_PRINT(orientation.x);
+        CUBE_PRINT(",\"pitch\": ");
         CUBE_PRINT(error_rate.x);
         CUBE_PRINT(",\"yaw\": ");
         CUBE_PRINT(error_stab.x);
@@ -223,10 +224,12 @@ void Cubensis::print()
         CUBE_PRINT(motors[3].throttle);
         CUBE_PRINTLN("}");
         #elif CUBENSIS_DBG==DBG_READABLE
-        CUBE_PRINT("Rate error: ");
-        CUBE_PRINTLN(error_ratex);
-        CUBE_PRINT("Stab error: ");
-        CUBE_PRINTLN(error_stabx);
+        CUBE_PRINT("Throttle: ");
+        CUBE_PRINTLN(pulseIn(CH3, HIGH, 25000));
+//        CUBE_PRINT("Rate error: ");
+//        CUBE_PRINTLN(error_rate.x);
+//        CUBE_PRINT("Stab error: ");
+//        CUBE_PRINTLN(error_stab.x);
         #endif
     }
 }
